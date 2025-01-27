@@ -1,13 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
   Filter,
-  Clock,
   Download,
   Printer,
   Share2,
-  HeartPulse,
   MapPin,
   Cake,
   Heart,
@@ -16,6 +14,7 @@ import {
   User,
   Mail,
   Phone,
+  X,
 } from "lucide-react";
 import { getResidents } from "../services/api";
 import Sidebar from "./SideBar";
@@ -23,16 +22,50 @@ import Sidebar from "./SideBar";
 const ResidentList = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
   const [residents, setResidents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    ageRange: "all",
+    gender: "all",
+  });
 
-  useEffect(() => {
-    fetchResidents();
-  }, []);
+  const formatDate = (date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}/${month}/${day}`;
+  };
 
-  const fetchResidents = async () => {
+  const formatLastUpdated = (updatedAt) => {
+    const now = new Date();
+    const updated = new Date(updatedAt);
+    const diffInHours = Math.floor((now - updated) / (1000 * 60 * 60));
+
+    if (diffInHours < 1) return "Just now";
+    if (diffInHours === 1) return "1 hour ago";
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+    return `${Math.floor(diffInHours / 24)} days ago`;
+  };
+
+  const getAge = (dateOfBirth) => {
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+    return age;
+  };
+
+  const fetchResidents = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getResidents();
@@ -66,49 +99,104 @@ const ResidentList = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
+  useEffect(() => {
+    fetchResidents();
+  }, [fetchResidents]);
+
+  const filterResidents = (residentsToFilter) => {
+    return residentsToFilter.filter((resident) => {
+      const age = getAge(resident.basicInfo.dateOfBirth);
+      const matchesSearch = resident.basicInfo.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+
+      const matchesAgeRange =
+        filters.ageRange === "all" ||
+        (filters.ageRange === "under65" && age < 65) ||
+        (filters.ageRange === "65-75" && age >= 65 && age <= 75) ||
+        (filters.ageRange === "75-85" && age > 75 && age <= 85) ||
+        (filters.ageRange === "above85" && age > 85);
+
+      const matchesGender =
+        filters.gender === "all" ||
+        resident.basicInfo.gender.toLowerCase() ===
+          filters.gender.toLowerCase();
+
+      return matchesSearch && matchesAgeRange && matchesGender;
     });
   };
 
-  const formatLastUpdated = (updatedAt) => {
-    const now = new Date();
-    const updated = new Date(updatedAt);
-    const diffInHours = Math.floor((now - updated) / (1000 * 60 * 60));
+  const FilterPanel = () => (
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto"
+      aria-labelledby="filter-panel"
+    >
+      <div
+        className="fixed inset-0 bg-black bg-opacity-25"
+        onClick={() => setShowFilters(false)}
+      ></div>
+      <div className="relative min-h-screen flex items-start justify-end p-4">
+        <div className="relative bg-white rounded-xl shadow-lg p-6 w-80 mt-16 mr-4">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-semibold text-gray-900">Filter</h3>
+            <button
+              onClick={() => setShowFilters(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
 
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours === 1) return "1 hour ago";
-    if (diffInHours < 24) return `${diffInHours} hours ago`;
-    return `${Math.floor(diffInHours / 24)} days ago`;
-  };
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Age Range
+              </label>
+              <select
+                value={filters.ageRange}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, ageRange: e.target.value }))
+                }
+                className="w-full p-2 border border-gray-200 rounded-lg text-sm"
+              >
+                <option value="all">All Ages</option>
+                <option value="under65">Under 65</option>
+                <option value="65-75">65-75</option>
+                <option value="75-85">75-85</option>
+                <option value="above85">Above 85</option>
+              </select>
+            </div>
 
-  const getStatusColor = (status) => {
-    return status === "Critical"
-      ? "bg-red-50 text-red-600 border-red-100"
-      : "bg-green-50 text-green-600 border-green-100";
-  };
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Gender
+              </label>
+              <select
+                value={filters.gender}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, gender: e.target.value }))
+                }
+                className="w-full p-2 border border-gray-200 rounded-lg text-sm"
+              >
+                <option value="all">All</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
-  const filteredResidents = residents.filter((resident) => {
-    const matchesSearch = resident.basicInfo.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-
-    if (activeTab === "all") return matchesSearch;
-    if (activeTab === "critical")
-      return matchesSearch && resident.health.status === "Critical";
-    if (activeTab === "stable")
-      return matchesSearch && resident.health.status === "Stable";
-    return matchesSearch;
-  });
+  const filteredResidents = filterResidents(residents);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-poppins">
         <Sidebar activePage="residents-list" />
         <div className="ml-72 p-8 flex items-center justify-center">
           <div className="text-gray-600">Loading residents...</div>
@@ -119,7 +207,7 @@ const ResidentList = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-poppins">
         <Sidebar activePage="residents-list" />
         <div className="ml-72 p-8 flex items-center justify-center">
           <div className="text-red-600">Error: {error}</div>
@@ -129,11 +217,10 @@ const ResidentList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-poppins">
       <Sidebar activePage="residents-list" />
 
       <div className="ml-72 p-8">
-        {/* Header Section */}
         <div className="mb-8 bg-white/90 backdrop-blur-xl p-8 rounded-2xl shadow-lg border border-gray-100">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -167,32 +254,19 @@ const ResidentList = () => {
                 />
               </div>
 
-              <button className="flex items-center gap-2 px-4 py-3 text-gray-700 bg-gray-50 rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors">
+              <button
+                onClick={() => setShowFilters(true)}
+                className="flex items-center gap-2 px-4 py-3 text-gray-700 bg-gray-50 rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors"
+              >
                 <Filter className="h-5 w-5" />
-                <span>Filters</span>
+                <span>Filter</span>
               </button>
             </div>
           </div>
-
-          {/* Enhanced Tabs */}
-          <div className="flex gap-2 p-1 bg-gray-100/50 rounded-xl max-w-md">
-            {["all", "critical", "stable"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 px-6 py-2.5 rounded-lg capitalize text-sm font-medium transition-all duration-200 ${
-                  activeTab === tab
-                    ? "bg-white text-blue-600 shadow-sm"
-                    : "text-gray-600 hover:bg-white/50"
-                }`}
-              >
-                {tab} Residents
-              </button>
-            ))}
-          </div>
         </div>
 
-        {/* Resident Cards Grid */}
+        {showFilters && <FilterPanel />}
+
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredResidents.map((resident) => (
             <div
@@ -235,38 +309,14 @@ const ResidentList = () => {
                 </div>
               </div>
 
-              <div className="space-y-4 mb-6">
-                <div className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl">
-                  <div className="flex items-center gap-2">
-                    <HeartPulse className="h-5 w-5 text-gray-400" />
-                    <span className="text-sm text-gray-500">Health Status</span>
-                  </div>
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                      resident.health.status
-                    )}`}
-                  >
-                    {resident.health.status}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-gray-400" />
-                    <span className="text-sm text-gray-500">Last Updated</span>
-                  </div>
-                  <span className="text-sm text-gray-600">
-                    {resident.health.lastUpdated}
-                  </span>
-                </div>
-              </div>
-
-              {/* Emergency Contact Info */}
               <div className="space-y-3 mb-6 p-4 bg-gray-50/50 rounded-xl">
                 <h4 className="font-medium text-gray-700">Emergency Contact</h4>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <User className="h-4 w-4" />
-                  <span>{resident.emergencyContact.name}</span>
+                  <span>
+                    {resident.emergencyContact.name} (
+                    {resident.emergencyContact.relation})
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Phone className="h-4 w-4" />
