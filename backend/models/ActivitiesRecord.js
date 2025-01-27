@@ -7,33 +7,23 @@ const activitiesRecordSchema = new mongoose.Schema({
     ref: 'Resident',
     required: true
   },
-  activities: [{
-    name: {
-      type: String,
-      required: true
-    },
-    date: {
-      type: String,
-      required: true
-    },
-    description: {
-      type: String
-    },
-    status: {
-      type: String,
-      enum: ['Scheduled', 'In Progress', 'Completed', 'Cancelled'],
-      default: 'Scheduled'
-    },
-    duration: {
-      type: Number, // Duration in minutes
-    },
-    location: {
-      type: String
-    },
-    notes: {
-      type: String
-    }
-  }],
+  name: {
+    type: String,
+    required: true
+  },
+  date: {
+    type: String,
+    required: true
+  },
+  description: String,
+  status: {
+    type: String,
+    enum: ['Scheduled', 'In Progress', 'Completed', 'Cancelled'],
+    default: 'Scheduled'
+  },
+  duration: Number,
+  location: String,
+  notes: String,
   createdAt: {
     type: Date,
     default: Date.now

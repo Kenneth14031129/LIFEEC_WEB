@@ -18,6 +18,7 @@ import {
   Pizza,
   Phone,
   Mail,
+  Calendar,
 } from "lucide-react";
 import Sidebar from "./SideBar";
 import HealthUpdateModal from "./HealthUpdateModal";
@@ -210,8 +211,9 @@ const ResidentDetails = () => {
         setMealRecords([mealRecordResponse.mealRecord].filter(Boolean));
       }
 
-      const activitiesRecords = activitiesRecordResponse.activities || [];
-      setActivitiesRecords(activitiesRecords);
+      // Safely handle activities data
+      const activities = activitiesRecordResponse?.activities || [];
+      setActivitiesRecords(activities);
 
       const transformedData = {
         id: resident._id,
@@ -280,7 +282,7 @@ const ResidentDetails = () => {
               snacks: "",
               dinner: "",
             },
-        activities: activitiesRecordResponse?.activities || [],
+        activities: activities,
       };
 
       setResidentData(transformedData);
@@ -440,67 +442,40 @@ const ResidentDetails = () => {
         response = await createActivitiesRecord(id, updatedActivities);
         toast.success("New activity added successfully");
 
-        // Update activities records and resident data
-        setActivitiesRecords((prevRecords) => [
-          response.activitiesRecord,
-          ...prevRecords,
-        ]);
+        const newActivity = {
+          ...updatedActivities.activities[0],
+          _id: response.activitiesRecord._id,
+        };
 
+        setActivitiesRecords((prevRecords) => [newActivity, ...prevRecords]);
         setResidentData((prev) => ({
           ...prev,
-          activities: [
-            ...prev.activities,
-            response.activitiesRecord.activities[0],
-          ],
+          activities: [newActivity, ...prev.activities],
         }));
       } else {
         // Update existing record
         response = await updateActivitiesRecord(id, updatedActivities);
         toast.success("Activities updated successfully");
 
-        // Update activities records
+        const updatedActivity = {
+          ...updatedActivities.activities[0],
+          _id: response.activitiesRecord._id,
+        };
+
+        // Update activities records - replace old record with updated one
         setActivitiesRecords((prevRecords) => {
-          const updatedDate = updatedActivities.activities[0].date;
-
-          // Find index of record with matching date
-          const existingIndex = prevRecords.findIndex(
-            (record) => record.date === updatedDate
+          return prevRecords.map((record) =>
+            record._id === updatedActivity._id ? updatedActivity : record
           );
-
-          if (existingIndex !== -1) {
-            // Replace existing record
-            const updatedRecords = [...prevRecords];
-            updatedRecords[existingIndex] = response.activitiesRecord;
-            return updatedRecords;
-          }
-
-          // If no existing record, add new
-          return [...prevRecords, response.activitiesRecord];
         });
 
-        // Update resident data
-        setResidentData((prev) => {
-          // Replace or add the updated activity
-          const updatedActivitiesList = prev.activities.map((activity) =>
-            activity.date === updatedActivities.activities[0].date
-              ? updatedActivities.activities[0]
-              : activity
-          );
-
-          // If no existing activity for this date, add new
-          if (
-            !updatedActivitiesList.some(
-              (a) => a.date === updatedActivities.activities[0].date
-            )
-          ) {
-            updatedActivitiesList.push(updatedActivities.activities[0]);
-          }
-
-          return {
-            ...prev,
-            activities: updatedActivitiesList,
-          };
-        });
+        // Update resident data - replace old activity with updated one
+        setResidentData((prev) => ({
+          ...prev,
+          activities: prev.activities.map((activity) =>
+            activity._id === updatedActivity._id ? updatedActivity : activity
+          ),
+        }));
       }
 
       setShowActivityModal(false);
@@ -1191,105 +1166,94 @@ const ResidentDetails = () => {
                             </h1>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end">
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-500">Date:</span>
-                            <span className="font-medium">
-                              {/* Use the date of the first activity or current date */}
-                              {residentData.activities[0]?.date
-                                ? new Date(
-                                    residentData.activities[0].date
-                                  ).toLocaleDateString("en-CA", {
-                                    year: "numeric",
-                                    month: "2-digit",
-                                    day: "2-digit",
-                                  })
-                                : "Not specified"}
-                            </span>
-                          </div>
-                        </div>
+                        <div className="flex flex-col items-end"></div>
                       </div>
 
                       {/* Activities List */}
                       <div className="space-y-4">
-                        {residentData.activities.map((activity, index) => (
-                          <div
-                            key={index}
-                            className="p-4 bg-gray-50 rounded-xl border border-gray-100"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-4">
-                                <div className="h-10 w-10 bg-green-50 rounded-lg flex items-center justify-center">
-                                  <Activity className="h-5 w-5 text-green-500" />
-                                </div>
-                                <div>
-                                  <h4 className="font-medium text-gray-900 text-lg">
-                                    {activity.name}
-                                  </h4>
-                                  <div className="flex items-center gap-3 mt-1 text-gray-600">
-                                    {activity.location && (
+                        {Array.isArray(residentData.activities) &&
+                          residentData.activities.map((activity, index) => (
+                            <div
+                              key={activity._id || index}
+                              className="p-4 bg-gray-50 rounded-xl border border-gray-100"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                  <div className="h-10 w-10 bg-green-50 rounded-lg flex items-center justify-center">
+                                    <Activity className="h-5 w-5 text-green-500" />
+                                  </div>
+                                  <div>
+                                    <h4 className="font-medium text-gray-900 text-lg">
+                                      {activity.name}
+                                    </h4>
+                                    <div className="flex items-center gap-3 mt-1 text-gray-600">
                                       <div className="flex items-center gap-2">
                                         <MapPin className="h-4 w-4" />
                                         <span className="text-sm">
                                           {activity.location}
                                         </span>
                                       </div>
-                                    )}
+                                      <div className="flex items-center gap-2">
+                                        <Calendar className="h-4 w-4" />
+                                        <span className="text-sm">
+                                          {activity.date}
+                                        </span>
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
+                                <div className="flex items-center gap-4">
+                                  {activity.duration && (
+                                    <div className="flex items-center gap-2 text-gray-600">
+                                      <Clock className="h-4 w-4" />
+                                      <span className="text-sm">
+                                        {activity.duration} mins
+                                      </span>
+                                    </div>
+                                  )}
+                                  <span
+                                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                      activity.status === "Completed"
+                                        ? "bg-green-50 text-green-600"
+                                        : activity.status === "Cancelled"
+                                        ? "bg-red-50 text-red-600"
+                                        : activity.status === "In Progress"
+                                        ? "bg-yellow-50 text-yellow-600"
+                                        : "bg-blue-50 text-blue-600"
+                                    }`}
+                                  >
+                                    {activity.status}
+                                  </span>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-4">
-                                {activity.duration && (
-                                  <div className="flex items-center gap-2 text-gray-600">
-                                    <Clock className="h-4 w-4" />
-                                    <span className="text-sm">
-                                      {activity.duration} mins
-                                    </span>
-                                  </div>
-                                )}
-                                <span
-                                  className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                    activity.status === "Completed"
-                                      ? "bg-green-50 text-green-600"
-                                      : activity.status === "Cancelled"
-                                      ? "bg-red-50 text-red-600"
-                                      : activity.status === "In Progress"
-                                      ? "bg-yellow-50 text-yellow-600"
-                                      : "bg-blue-50 text-blue-600"
-                                  }`}
-                                >
-                                  {activity.status}
-                                </span>
-                              </div>
-                            </div>
 
-                            {/* Optional Description and Notes */}
-                            {(activity.description || activity.notes) && (
-                              <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">
-                                {activity.description && (
-                                  <div className="mb-2">
-                                    <h5 className="text-sm font-medium text-gray-700 mb-1">
-                                      Description
-                                    </h5>
-                                    <p className="text-gray-600">
-                                      {activity.description}
-                                    </p>
-                                  </div>
-                                )}
-                                {activity.notes && (
-                                  <div>
-                                    <h5 className="text-sm font-medium text-gray-700 mb-1">
-                                      Notes
-                                    </h5>
-                                    <p className="text-gray-600">
-                                      {activity.notes}
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                              {/* Optional Description and Notes */}
+                              {(activity.description || activity.notes) && (
+                                <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">
+                                  {activity.description && (
+                                    <div className="mb-2">
+                                      <h5 className="text-sm font-medium text-gray-700 mb-1">
+                                        Description
+                                      </h5>
+                                      <p className="text-gray-600">
+                                        {activity.description}
+                                      </p>
+                                    </div>
+                                  )}
+                                  {activity.notes && (
+                                    <div>
+                                      <h5 className="text-sm font-medium text-gray-700 mb-1">
+                                        Notes
+                                      </h5>
+                                      <p className="text-gray-600">
+                                        {activity.notes}
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ))}
                       </div>
                     </div>
                   </div>
