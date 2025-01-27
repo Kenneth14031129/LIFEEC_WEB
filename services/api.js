@@ -178,7 +178,7 @@ export const createActivitiesRecord = async (residentId, activitiesData) => {
   }
 };
 
-export const updateActivitiesRecord = async (residentId, activitiesData) => {
+export const updateActivitiesRecord = async (residentId, recordId, activitiesData) => {
   try {
     // Ensure date is in correct format
     const processedData = {
@@ -189,7 +189,7 @@ export const updateActivitiesRecord = async (residentId, activitiesData) => {
       }))
     };
 
-    const { data } = await api.post(`/residents/${residentId}/activities`, processedData);
+    const { data } = await api.put(`/residents/${residentId}/activities/${recordId}`, processedData);
     return data;
   } catch (error) {
     console.error('Activities update error:', error);

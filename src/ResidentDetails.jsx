@@ -453,19 +453,33 @@ const ResidentDetails = () => {
           activities: [newActivity, ...prev.activities],
         }));
       } else {
+        // Find the activity record that matches the date we're updating
+        const existingActivity = activitiesRecords.find(
+          (record) => record.date === updatedActivities.activities[0].date
+        );
+
+        if (!existingActivity) {
+          toast.error("Could not find the activity to update");
+          return;
+        }
+
         // Update existing record
-        response = await updateActivitiesRecord(id, updatedActivities);
+        response = await updateActivitiesRecord(
+          id,
+          existingActivity._id,
+          updatedActivities
+        );
         toast.success("Activities updated successfully");
 
         const updatedActivity = {
           ...updatedActivities.activities[0],
-          _id: response.activitiesRecord._id,
+          _id: existingActivity._id,
         };
 
         // Update activities records - replace old record with updated one
         setActivitiesRecords((prevRecords) => {
           return prevRecords.map((record) =>
-            record._id === updatedActivity._id ? updatedActivity : record
+            record._id === existingActivity._id ? updatedActivity : record
           );
         });
 
@@ -473,7 +487,7 @@ const ResidentDetails = () => {
         setResidentData((prev) => ({
           ...prev,
           activities: prev.activities.map((activity) =>
-            activity._id === updatedActivity._id ? updatedActivity : activity
+            activity._id === existingActivity._id ? updatedActivity : activity
           ),
         }));
       }
