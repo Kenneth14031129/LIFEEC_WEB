@@ -36,7 +36,7 @@ const EmergencyAlertButton = ({ resident }) => {
       const alertData = {
         residentId: resident.id,
         residentName: resident.basicInfo.name,
-        message: `Emergency alert triggered for ${resident.basicInfo.name}`,
+        message: `Emergency alert triggered`,
         emergencyContact: {
           name: resident.emergencyContact.name,
           phone: resident.emergencyContact.phone,

@@ -44,4 +44,21 @@ router.get('/:residentId', protect, async (req, res) => {
   }
 });
 
+router.put('/mark-read', protect, async (req, res) => {
+  try {
+    const { alertIds } = req.body;
+    
+    // Update multiple alerts
+    await EmergencyAlert.updateMany(
+      { _id: { $in: alertIds } },
+      { $set: { read: true } }
+    );
+
+    res.json({ message: 'Alerts marked as read successfully' });
+  } catch (error) {
+    console.error('Error marking alerts as read:', error);
+    res.status(500).json({ message: 'Failed to mark alerts as read' });
+  }
+});
+
 export default router;

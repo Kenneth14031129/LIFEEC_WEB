@@ -240,3 +240,12 @@ export const getResidentEmergencyAlerts = async (residentId) => {
     throw error.response?.data || { message: 'Error fetching emergency alerts' };
   }
 };
+
+export const markAlertsAsRead = async (alertIds) => {
+  try {
+    const { data } = await api.put('/emergency-alerts/mark-read', { alertIds });
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error marking alerts as read' };
+  }
+};

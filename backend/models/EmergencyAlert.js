@@ -25,6 +25,10 @@ const emergencyAlertSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  read: {
+    type: Boolean,
+    default: false
+  },
 });
 
 export default mongoose.model('EmergencyAlert', emergencyAlertSchema);

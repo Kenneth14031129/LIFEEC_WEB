@@ -22,40 +22,143 @@ import {
   Filter,
 } from "lucide-react";
 import Sidebar from "./SideBar";
+import {
+  getResidents,
+  getResidentEmergencyAlerts,
+  markAlertsAsRead,
+} from "../services/api";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [showResidentHistory, setShowResidentHistory] = useState(false);
   const [showAlertHistory, setShowAlertHistory] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Sample notifications data
-  const notifications = [
-    {
-      id: 1,
-      resident: "Maria Garcia",
-      type: "emergency",
-      message: "Emergency alert from Room 101",
-      time: "2 min ago",
-      read: false,
-    },
-    {
-      id: 2,
-      resident: "Maria Garcia",
-      type: "emergency",
-      message: "Emergency alert from Room 102",
-      time: "3 min ago",
-      read: false,
-    },
-    {
-      id: 3,
-      resident: "Maria Garcia",
-      type: "emergency",
-      message: "Emergency alert from Room 103",
-      time: "4 min ago",
-      read: false,
-    },
-  ];
+  const fetchAllAlerts = async () => {
+    try {
+      setIsLoading(true);
+      // First, get all residents
+      const response = await getResidents();
+      console.log("Raw API response:", response); // Debug log
+
+      // Handle undefined response
+      if (!response) {
+        console.error("No response from getResidents API");
+        setNotifications([]);
+        return;
+      }
+
+      // Check all possible locations of the data
+      let residentsData;
+      if (Array.isArray(response)) {
+        residentsData = response;
+      } else if (response.data && Array.isArray(response.data)) {
+        residentsData = response.data;
+      } else if (response.residents && Array.isArray(response.residents)) {
+        residentsData = response.residents;
+      } else {
+        console.error("Could not find residents array in response:", response);
+        setNotifications([]);
+        return;
+      }
+
+      console.log("Processed residents data:", residentsData); // Debug log
+
+      // Then fetch alerts for each resident
+      const alertPromises = residentsData.map((resident) => {
+        // Add null check for resident._id
+        if (!resident || !resident._id) {
+          console.error("Invalid resident object:", resident);
+          return Promise.resolve([]); // Return empty array for invalid residents
+        }
+        return getResidentEmergencyAlerts(resident._id);
+      });
+
+      const allAlertsArrays = await Promise.all(alertPromises);
+
+      // Add debug log for alerts
+      console.log("All alerts arrays:", allAlertsArrays);
+
+      // Flatten and sort all alerts by timestamp
+      const allAlerts = allAlertsArrays
+        .flat()
+        .filter((alert) => alert) // Filter out any null/undefined values
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+      // Transform alerts into notification format
+      const formattedNotifications = allAlerts.map((alert) => ({
+        id: alert._id,
+        resident: alert.residentName,
+        type: "emergency",
+        message: alert.message,
+        time: formatTimestamp(alert.timestamp),
+        read: alert.read || false,
+      }));
+
+      setNotifications(formattedNotifications);
+    } catch (error) {
+      console.error("Error fetching alerts:", error);
+      // Log more details about the error
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+        console.error("Error status:", error.response.status);
+      }
+      setNotifications([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Format timestamp to relative time
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+
+    if (diffInMinutes < 1) return "just now";
+    if (diffInMinutes < 60) return `${diffInMinutes} min ago`;
+    if (diffInMinutes < 1440)
+      return `${Math.floor(diffInMinutes / 60)} hours ago`;
+    return `${Math.floor(diffInMinutes / 1440)} days ago`;
+  };
+
+  // Mark all notifications as read
+  const markAllAsRead = async () => {
+    try {
+      // Get IDs of all unread notifications
+      const unreadIds = notifications
+        .filter((notif) => !notif.read)
+        .map((notif) => notif.id);
+
+      if (unreadIds.length === 0) return;
+
+      // Call API to mark alerts as read
+      await markAlertsAsRead(unreadIds);
+
+      // Update local state
+      setNotifications(
+        notifications.map((notif) => ({
+          ...notif,
+          read: true,
+        }))
+      );
+    } catch (error) {
+      console.error("Error marking notifications as read:", error);
+      // Optionally show an error message to the user
+    }
+  };
+
+  // Fetch alerts when component mounts
+  useEffect(() => {
+    fetchAllAlerts();
+
+    // Set up polling for new alerts every minute
+    const pollInterval = setInterval(fetchAllAlerts, 60000);
+
+    return () => clearInterval(pollInterval);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -347,12 +450,14 @@ const Dashboard = () => {
                 className="relative p-2 text-gray-600 hover:bg-white/80 rounded-lg"
               >
                 <Bell className="h-6 w-6" />
-                <span className="absolute top-0 right-0 h-5 w-5 bg-gradient-to-r from-red-500 to-pink-500 rounded-full text-white text-xs flex items-center justify-center border-2 border-white">
-                  {notifications.filter((n) => !n.read).length}
-                </span>
+                {notifications.filter((n) => !n.read).length > 0 && (
+                  <span className="absolute top-0 right-0 h-5 w-5 bg-gradient-to-r from-red-500 to-pink-500 rounded-full text-white text-xs flex items-center justify-center border-2 border-white">
+                    {notifications.filter((n) => !n.read).length}
+                  </span>
+                )}
               </button>
 
-              {/* Notification Dropdown */}
+              {/* Updated Notification Dropdown */}
               {showNotifications && (
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-lg border border-gray-100 z-50">
                   <div className="p-4 border-b border-gray-100">
@@ -360,47 +465,54 @@ const Dashboard = () => {
                       <h3 className="font-semibold text-gray-800">
                         Notifications
                       </h3>
-                      <button className="text-sm text-red-600 hover:text-red-700">
+                      <button
+                        onClick={markAllAsRead}
+                        className="text-sm text-red-600 hover:text-red-700"
+                      >
                         Mark all as read
                       </button>
                     </div>
                   </div>
 
                   <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
-                    {notifications.map((notification) => (
-                      <div
-                        key={notification.id}
-                        className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                          !notification.read ? "bg-blue-50/50" : ""
-                        }`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div
-                            className={`p-2 rounded-xl ${
-                              notification.type === "emergency"
-                                ? "bg-red-100 text-red-600"
-                                : "bg-gray-100 text-gray-600"
-                            }`}
-                          >
-                            <AlertTriangle className="h-4 w-4" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-800">
-                              {notification.resident}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {notification.message}
-                            </p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {notification.time}
-                            </p>
-                          </div>
-                          {!notification.read && (
-                            <div className="h-2 w-2 rounded-full bg-red-500"></div>
-                          )}
-                        </div>
+                    {isLoading ? (
+                      <div className="p-4 text-center text-gray-500">
+                        Loading notifications...
                       </div>
-                    ))}
+                    ) : notifications.length === 0 ? (
+                      <div className="p-4 text-center text-gray-500">
+                        No notifications
+                      </div>
+                    ) : (
+                      notifications.map((notification) => (
+                        <div
+                          key={notification.id}
+                          className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                            !notification.read ? "bg-blue-50/50" : ""
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 rounded-xl bg-red-100 text-red-600">
+                              <AlertTriangle className="h-4 w-4" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-gray-800">
+                                {notification.resident}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {notification.message}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {notification.time}
+                              </p>
+                            </div>
+                            {!notification.read && (
+                              <div className="h-2 w-2 rounded-full bg-red-500"></div>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
 
                   <div className="p-4 border-t border-gray-100">
