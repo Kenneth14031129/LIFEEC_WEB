@@ -9,7 +9,6 @@ import {
   MapPin,
   Cake,
   Heart,
-  AlertTriangle,
   ArrowUpRight,
   User,
   Mail,
@@ -18,6 +17,7 @@ import {
 } from "lucide-react";
 import { getResidents } from "../services/api";
 import Sidebar from "./SideBar";
+import EmergencyAlertButton from "./EmergencyAlertButton";
 
 const ResidentList = () => {
   const navigate = useNavigate();
@@ -330,10 +330,7 @@ const ResidentList = () => {
 
               <div className="mt-6 pt-6 border-t border-gray-100">
                 <div className="flex items-center justify-between">
-                  <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-xl hover:from-red-700 hover:to-red-600 transition-colors">
-                    <AlertTriangle className="h-5 w-5" />
-                    <span className="font-medium">Emergency Alert</span>
-                  </button>
+                  <EmergencyAlertButton resident={resident} />
                   <button
                     onClick={() => navigate(`/residents/${resident.id}`)}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-cyan-500 rounded-xl hover:bg-blue-100 transition-colors"

@@ -198,7 +198,6 @@ export const updateActivitiesRecord = async (residentId, recordId, activitiesDat
 };
 
 //Add User
-// Get all users
 export const getUsers = async () => {
   try {
     const { data } = await api.get('/users');
@@ -208,12 +207,36 @@ export const getUsers = async () => {
   }
 };
 
-// Add new user
 export const addUser = async (userData) => {
   try {
     const { data } = await api.post('/users/add', userData);
     return data;
   } catch (error) {
     throw error.response?.data || { message: 'Error adding user' };
+  }
+};
+
+//Emergency Alert
+export const createEmergencyAlert = async (alertData) => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+    
+    const { data } = await api.post('/emergency-alerts', alertData);
+    return data;
+  } catch (error) {
+    console.error('Detailed error:', error.response || error);
+    throw error.response?.data || { message: 'Error creating emergency alert' };
+  }
+};
+
+export const getResidentEmergencyAlerts = async (residentId) => {
+  try {
+    const { data } = await api.get(`/emergency-alerts/${residentId}`);
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error fetching emergency alerts' };
   }
 };

@@ -8,6 +8,7 @@ import addResidentRoutes from './routes/addResidentRoutes.js';
 import healthRecordRoutes from './routes/healthRecords.js';
 import mealRecordRoutes from './routes/mealRecords.js'
 import activitiesRecordRoutes from './routes/activitiesRecords.js';
+import emergencyAlertRoutes from './routes/emergencyAlertRoutes.js';
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use('/api/addresidents', addResidentRoutes);
 app.use('/api', healthRecordRoutes);
 app.use('/api', mealRecordRoutes);
 app.use('/api', activitiesRecordRoutes);
+app.use('/api/emergency-alerts', emergencyAlertRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
