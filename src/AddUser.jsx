@@ -19,7 +19,7 @@ const AddUser = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // New state for form submission
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -40,13 +40,10 @@ const AddUser = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        setLoading(true);
         const data = await getUsers();
         setUsers(data);
       } catch (err) {
         setError(err.message);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -56,7 +53,7 @@ const AddUser = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      setLoading(true);
+      setIsSubmitting(true);
       const newUser = await addUser(formData);
       setUsers((prevUsers) => [...prevUsers, newUser]);
       // Reset form
@@ -70,18 +67,9 @@ const AddUser = () => {
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
-
-  // Add loading and error states to your JSX
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
 
   if (error) {
     return <div className="text-red-500 p-4">{error}</div>;
@@ -222,10 +210,15 @@ const AddUser = () => {
 
                   <button
                     type="submit"
+                    disabled={isSubmitting}
                     className="w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                   >
-                    <UserPlus className="h-5 w-5" />
-                    Add User
+                    {isSubmitting ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                    ) : (
+                      <UserPlus className="h-5 w-5" />
+                    )}
+                    {isSubmitting ? "Adding User..." : "Add User"}
                   </button>
                 </form>
               </div>
