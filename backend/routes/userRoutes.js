@@ -5,7 +5,8 @@ import {
   loginUser,
   getProfile,
   updateProfile,
-  getUsers
+  getUsers,
+  addUser,
 } from '../controllers/userController.js';
 
 const router = express.Router();
@@ -18,5 +19,6 @@ router.post('/login', loginUser);
 router.get('/profile', protect, getProfile);
 router.put('/profile', protect, updateProfile);
 router.get('/', protect, getUsers);
+router.post('/add', protect, addUser);
 
 export default router;

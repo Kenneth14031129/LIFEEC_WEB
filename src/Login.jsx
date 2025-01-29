@@ -273,7 +273,7 @@ const Login = () => {
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50"
                   required
                 >
-                  <option value="staff">Staff</option>
+                  <option value="owner">Owner</option>
                   <option value="admin">Admin</option>
                 </select>
               </div>

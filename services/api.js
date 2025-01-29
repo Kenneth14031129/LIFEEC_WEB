@@ -196,3 +196,24 @@ export const updateActivitiesRecord = async (residentId, recordId, activitiesDat
     throw error.response?.data || { message: 'Error updating activities' };
   }
 };
+
+//Add User
+// Get all users
+export const getUsers = async () => {
+  try {
+    const { data } = await api.get('/users');
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error fetching users' };
+  }
+};
+
+// Add new user
+export const addUser = async (userData) => {
+  try {
+    const { data } = await api.post('/users/add', userData);
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error adding user' };
+  }
+};
