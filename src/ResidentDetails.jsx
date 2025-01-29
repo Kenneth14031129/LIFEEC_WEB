@@ -594,7 +594,7 @@ const ResidentDetails = () => {
           <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="h-16 w-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center text-white text-2xl font-bold">
+                <div className="h-16 w-16 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold">
                   {residentData.basicInfo.name
                     ? residentData.basicInfo.name.charAt(0)
                     : ""}
@@ -634,7 +634,7 @@ const ResidentDetails = () => {
                 onClick={() => setActiveTab(id)}
                 className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                   activeTab === id
-                    ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md"
+                    ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md"
                     : "text-gray-600 hover:bg-white/80"
                 }`}
               >
@@ -655,7 +655,7 @@ const ResidentDetails = () => {
                   {/* Header */}
                   <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
                     <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 text-blue-500">
+                      <div className="h-12 w-12 text-cyan-500">
                         <User className="h-full w-full" />
                       </div>
                       <div>
@@ -671,7 +671,7 @@ const ResidentDetails = () => {
                     <div className="border border-gray-200 rounded-lg p-6">
                       <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 bg-blue-50 rounded-lg">
-                          <User className="h-5 w-5 text-blue-500" />
+                          <User className="h-5 w-5 text-cyan-500" />
                         </div>
                         <h2 className="text-lg font-semibold text-gray-900">
                           Basic Details
@@ -708,7 +708,7 @@ const ResidentDetails = () => {
                     <div className="border border-gray-200 rounded-lg p-6">
                       <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 bg-purple-50 rounded-lg">
-                          <MapPin className="h-5 w-5 text-purple-500" />
+                          <MapPin className="h-5 w-5 text-cyan-500" />
                         </div>
                         <h2 className="text-lg font-semibold text-gray-900">
                           Contact Information
@@ -824,7 +824,7 @@ const ResidentDetails = () => {
                     {/* Header */}
                     <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
                       <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 text-blue-500">
+                        <div className="h-12 w-12 text-cyan-500">
                           <Stethoscope className="h-full w-full" />
                         </div>
                         <div>
@@ -874,7 +874,7 @@ const ResidentDetails = () => {
                       <div className="border border-gray-200 rounded-lg p-6">
                         <div className="flex items-center gap-3 mb-4">
                           <div className="p-2 bg-purple-50 rounded-lg">
-                            <Stethoscope className="h-5 w-5 text-purple-500" />
+                            <Stethoscope className="h-5 w-5 text-cyan-500" />
                           </div>
                           <h2 className="text-lg font-semibold text-gray-900">
                             Medical Conditions
@@ -885,9 +885,9 @@ const ResidentDetails = () => {
                             (condition, index) => (
                               <div
                                 key={index}
-                                className="flex items-center gap-3 p-3 bg-purple-50/50 rounded-lg"
+                                className="flex items-center gap-3 p-3 bg-cyan-50/50 rounded-lg"
                               >
-                                <div className="h-2 w-2 bg-purple-500 rounded-full"></div>
+                                <div className="h-2 w-2 bg-cyan-500 rounded-full"></div>
                                 <span className="text-gray-900">
                                   {condition}
                                 </span>
@@ -902,7 +902,7 @@ const ResidentDetails = () => {
                     <div className="border border-gray-200 rounded-lg p-6 mb-6">
                       <div className="flex items-center gap-3 mb-6">
                         <div className="p-2 bg-blue-50 rounded-lg">
-                          <Pill className="h-5 w-5 text-blue-500" />
+                          <Pill className="h-5 w-5 text-cyan-500" />
                         </div>
                         <h2 className="text-lg font-semibold text-gray-900">
                           Medication Details
@@ -976,7 +976,7 @@ const ResidentDetails = () => {
                     <div className="border border-gray-200 rounded-lg p-6">
                       <div className="flex items-center gap-3 mb-6">
                         <div className="p-2 bg-green-50 rounded-lg">
-                          <FileText className="h-5 w-5 text-green-500" />
+                          <FileText className="h-5 w-5 text-cyan-500" />
                         </div>
                         <h2 className="text-lg font-semibold text-gray-900">
                           Health Assessment
@@ -1033,7 +1033,7 @@ const ResidentDetails = () => {
                     {/* Header */}
                     <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
                       <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 text-orange-500">
+                        <div className="h-12 w-12 text-cyan-500">
                           <UtensilsCrossed className="h-full w-full" />
                         </div>
                         <div>
@@ -1075,14 +1075,14 @@ const ResidentDetails = () => {
                       {/* Nutritional Goals */}
                       <div className="border border-gray-200 rounded-lg p-6">
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="p-2 bg-green-50 rounded-lg">
-                            <Heart className="h-5 w-5 text-green-500" />
+                          <div className="p-2 bg-cyan-50 rounded-lg">
+                            <Heart className="h-5 w-5 text-cyan-500" />
                           </div>
                           <h2 className="text-lg font-semibold text-gray-900">
                             Nutritional Goals
                           </h2>
                         </div>
-                        <div className="p-4 bg-green-50/50 rounded-lg">
+                        <div className="p-4 bg-cyan-50/50 rounded-lg">
                           <p className="text-gray-900">
                             {residentData.meals.nutritionalGoals ||
                               "No nutritional goals specified"}
@@ -1094,8 +1094,8 @@ const ResidentDetails = () => {
                     {/* Meal Schedule Section */}
                     <div className="border border-gray-200 rounded-lg p-6">
                       <div className="flex items-center gap-3 mb-6">
-                        <div className="p-2 bg-blue-50 rounded-lg">
-                          <UtensilsCrossed className="h-5 w-5 text-blue-500" />
+                        <div className="p-2 bg-cyan-50 rounded-lg">
+                          <UtensilsCrossed className="h-5 w-5 text-cyan-500" />
                         </div>
                         <h2 className="text-lg font-semibold text-gray-900">
                           Daily Meal Schedule
@@ -1112,24 +1112,24 @@ const ResidentDetails = () => {
                                 <div
                                   className={`h-10 w-10 rounded-lg flex items-center justify-center ${
                                     meal === "breakfast"
-                                      ? "bg-green-50"
+                                      ? "bg-cyan-50"
                                       : meal === "lunch"
-                                      ? "bg-orange-50"
+                                      ? "bg-cyan-50"
                                       : meal === "snacks"
-                                      ? "bg-yellow-50"
-                                      : "bg-blue-50"
+                                      ? "bg-cyan-50"
+                                      : "bg-cyan-50"
                                   }`}
                                 >
                                   {meal === "breakfast" ? (
                                     <Apple
-                                      className={`h-5 w-5 text-green-500`}
+                                      className={`h-5 w-5 text-cyan-500`}
                                     />
                                   ) : meal === "lunch" ? (
-                                    <Pizza className="h-5 w-5 text-orange-500" />
+                                    <Pizza className="h-5 w-5 text-cyan-500" />
                                   ) : meal === "snacks" ? (
-                                    <Apple className="h-5 w-5 text-yellow-500" />
+                                    <Apple className="h-5 w-5 text-cyan-500" />
                                   ) : (
-                                    <UtensilsCrossed className="h-5 w-5 text-blue-500" />
+                                    <UtensilsCrossed className="h-5 w-5 text-cyan-500" />
                                   )}
                                 </div>
                                 <div className="flex-1">
@@ -1171,7 +1171,7 @@ const ResidentDetails = () => {
                     <div className="bg-white rounded-xl p-6 shadow-lg">
                       <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
                         <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 text-green-500">
+                          <div className="h-12 w-12 text-cyan-500">
                             <Activity className="h-full w-full" />
                           </div>
                           <div>
@@ -1193,8 +1193,8 @@ const ResidentDetails = () => {
                             >
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                  <div className="h-10 w-10 bg-green-50 rounded-lg flex items-center justify-center">
-                                    <Activity className="h-5 w-5 text-green-500" />
+                                  <div className="h-10 w-10 bg-cyan-50 rounded-lg flex items-center justify-center">
+                                    <Activity className="h-5 w-5 text-cyan-500" />
                                   </div>
                                   <div>
                                     <h4 className="font-medium text-gray-900 text-lg">
@@ -1290,15 +1290,15 @@ const ResidentDetails = () => {
                       {healthRecords.length > 0 ? (
                         <button
                           onClick={handleUpdateClick}
-                          className="w-full flex items-center justify-between p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors"
+                          className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <FileText className="h-5 w-5 text-blue-500" />
-                            <span className="font-medium text-blue-700">
+                            <FileText className="h-5 w-5 text-cyan-500" />
+                            <span className="font-medium text-cyan-700">
                               Update Health Record
                             </span>
                           </div>
-                          <ChevronRight className="h-5 w-5 text-blue-500" />
+                          <ChevronRight className="h-5 w-5 text-cyan-500" />
                         </button>
                       ) : (
                         <div className="w-full p-4 bg-gray-50 rounded-xl text-center">
@@ -1311,30 +1311,30 @@ const ResidentDetails = () => {
                       {/* Add New Health Record button */}
                       <button
                         onClick={handleAddNewClick}
-                        className="w-full flex items-center justify-between p-4 bg-green-50 rounded-xl hover:bg-green-100 transition-colors"
+                        className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <FileText className="h-5 w-5 text-green-500" />
-                          <span className="font-medium text-green-700">
+                          <FileText className="h-5 w-5 text-cyan-500" />
+                          <span className="font-medium text-cyan-700">
                             Add New Health Record
                           </span>
                         </div>
-                        <ChevronRight className="h-5 w-5 text-green-500" />
+                        <ChevronRight className="h-5 w-5 text-cyan-500" />
                       </button>
 
                       {/* View History button */}
                       {healthRecords.length > 0 && (
                         <button
                           onClick={() => setShowHealthHistoryModal(true)}
-                          className="w-full flex items-center justify-between p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors"
+                          className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <Clock className="h-5 w-5 text-purple-500" />
-                            <span className="font-medium text-purple-700">
+                            <Clock className="h-5 w-5 text-cyan-500" />
+                            <span className="font-medium text-cyan-700">
                               View Health History
                             </span>
                           </div>
-                          <ChevronRight className="h-5 w-5 text-purple-500" />
+                          <ChevronRight className="h-5 w-5 text-cyan-500" />
                         </button>
                       )}
                     </div>
@@ -1346,15 +1346,15 @@ const ResidentDetails = () => {
                       {mealRecords.length > 0 ? (
                         <button
                           onClick={handleMealUpdateClick}
-                          className="w-full flex items-center justify-between p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors"
+                          className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <FileText className="h-5 w-5 text-blue-500" />
-                            <span className="font-medium text-blue-700">
+                            <FileText className="h-5 w-5 text-cyan-500" />
+                            <span className="font-medium text-cyan-700">
                               Update Meal Plan
                             </span>
                           </div>
-                          <ChevronRight className="h-5 w-5 text-blue-500" />
+                          <ChevronRight className="h-5 w-5 text-cyan-500" />
                         </button>
                       ) : (
                         <div className="w-full p-4 bg-gray-50 rounded-xl text-center">
@@ -1367,30 +1367,30 @@ const ResidentDetails = () => {
                       {/* Add New Meal Plan button */}
                       <button
                         onClick={handleAddNewMealClick}
-                        className="w-full flex items-center justify-between p-4 bg-green-50 rounded-xl hover:bg-green-100 transition-colors"
+                        className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <FileText className="h-5 w-5 text-green-500" />
-                          <span className="font-medium text-green-700">
+                          <FileText className="h-5 w-5 text-cyan-500" />
+                          <span className="font-medium text-cyan-700">
                             Add New Meal Plan
                           </span>
                         </div>
-                        <ChevronRight className="h-5 w-5 text-green-500" />
+                        <ChevronRight className="h-5 w-5 text-cyan-500" />
                       </button>
 
                       {/* View History button */}
                       {mealRecords.length > 0 && (
                         <button
                           onClick={() => setShowMealHistoryModal(true)}
-                          className="w-full flex items-center justify-between p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors"
+                          className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <Clock className="h-5 w-5 text-purple-500" />
-                            <span className="font-medium text-purple-700">
+                            <Clock className="h-5 w-5 text-cyan-500" />
+                            <span className="font-medium text-cyan-700">
                               View Meal History
                             </span>
                           </div>
-                          <ChevronRight className="h-5 w-5 text-purple-500" />
+                          <ChevronRight className="h-5 w-5 text-cyan-500" />
                         </button>
                       )}
                     </div>
@@ -1402,15 +1402,15 @@ const ResidentDetails = () => {
                       {residentData.activities.length > 0 ? (
                         <button
                           onClick={handleActivityUpdateClick}
-                          className="w-full flex items-center justify-between p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors"
+                          className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <FileText className="h-5 w-5 text-blue-500" />
-                            <span className="font-medium text-blue-700">
+                            <FileText className="h-5 w-5 text-cyan-500" />
+                            <span className="font-medium text-cyan-700">
                               Update Activities
                             </span>
                           </div>
-                          <ChevronRight className="h-5 w-5 text-blue-500" />
+                          <ChevronRight className="h-5 w-5 text-cyan-500" />
                         </button>
                       ) : (
                         <div className="w-full p-4 bg-gray-50 rounded-xl text-center">
@@ -1423,30 +1423,30 @@ const ResidentDetails = () => {
                       {/* Add New Activity button */}
                       <button
                         onClick={handleAddNewActivityClick}
-                        className="w-full flex items-center justify-between p-4 bg-green-50 rounded-xl hover:bg-green-100 transition-colors"
+                        className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <Activity className="h-5 w-5 text-green-500" />
-                          <span className="font-medium text-green-700">
+                          <Activity className="h-5 w-5 text-cyan-500" />
+                          <span className="font-medium text-cyan-700">
                             Add New Activity
                           </span>
                         </div>
-                        <ChevronRight className="h-5 w-5 text-green-500" />
+                        <ChevronRight className="h-5 w-5 text-cyan-500" />
                       </button>
 
                       {/* View History button */}
                       {residentData.activities.length > 0 && (
                         <button
                           onClick={() => setShowActivitiesHistoryModal(true)}
-                          className="w-full flex items-center justify-between p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors"
+                          className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <Clock className="h-5 w-5 text-purple-500" />
-                            <span className="font-medium text-purple-700">
+                            <Clock className="h-5 w-5 text-cyan-500" />
+                            <span className="font-medium text-cyan-700">
                               View Activities History
                             </span>
                           </div>
-                          <ChevronRight className="h-5 w-5 text-purple-500" />
+                          <ChevronRight className="h-5 w-5 text-cyan-500" />
                         </button>
                       )}
                     </div>

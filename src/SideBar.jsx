@@ -14,10 +14,10 @@ const Sidebar = ({ activePage = "dashboard" }) => {
   ];
 
   return (
-    <div className="fixed left-0 top-0 h-full w-72 bg-gradient-to-b from-gray-900 to-gray-800 shadow-lg">
+    <div className="fixed left-0 top-0 h-full w-72 bg-gradient-to-b from-gray-900 to-gray-800 shadow-lg font-poppins">
       <div className="p-6">
         <div className="flex items-center gap-3 mb-10">
-          <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center">
             <span className="text-white font-bold text-xl">LE</span>
           </div>
           <span className="text-2xl font-bold text-white">LIFEEC</span>
@@ -34,20 +34,20 @@ const Sidebar = ({ activePage = "dashboard" }) => {
               className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-colors group
                 ${
                   activePage === label.toLowerCase().replace(" ", "-")
-                    ? "text-white bg-gradient-to-r from-blue-500 to-purple-500"
+                    ? "text-white bg-gradient-to-r from-cyan-500 to-blue-600"
                     : "text-gray-300 hover:bg-gray-700"
                 }`}
             >
               <Icon
                 className={`h-5 w-5 ${
                   activePage !== label.toLowerCase().replace(" ", "-") &&
-                  "group-hover:text-blue-400"
+                  "group-hover:text-cyan-400"
                 } transition-colors`}
               />
               <span
                 className={`${
                   activePage !== label.toLowerCase().replace(" ", "-") &&
-                  "group-hover:text-blue-400"
+                  "group-hover:text-cyan-400"
                 } transition-colors`}
               >
                 {label}

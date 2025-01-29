@@ -224,7 +224,7 @@ const ResidentList = () => {
         <div className="mb-8 bg-white/90 backdrop-blur-xl p-8 rounded-2xl shadow-lg border border-gray-100">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">
                 Residents List
               </h1>
               <p className="text-gray-600 mt-2">
@@ -275,7 +275,7 @@ const ResidentList = () => {
             >
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center gap-4">
-                  <div className="h-14 w-14 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center text-white text-xl font-bold">
+                  <div className="h-14 w-14 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center text-white text-xl font-bold">
                     {resident.basicInfo.name.charAt(0)}
                   </div>
                   <div>
@@ -336,7 +336,7 @@ const ResidentList = () => {
                   </button>
                   <button
                     onClick={() => navigate(`/residents/${resident.id}`)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-cyan-500 rounded-xl hover:bg-blue-100 transition-colors"
                   >
                     View Details
                     <ArrowUpRight className="h-4 w-4" />

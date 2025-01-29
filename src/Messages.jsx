@@ -109,7 +109,7 @@ const Messages = () => {
     if (status === "delivered")
       return <Check className="h-3 w-3 text-gray-400" />;
     if (status === "read")
-      return <CheckCheck className="h-3 w-3 text-blue-500" />;
+      return <CheckCheck className="h-3 w-3 text-cyan-500" />;
     return null;
   };
 
@@ -122,7 +122,7 @@ const Messages = () => {
         <div className="w-96 border-r border-gray-200 bg-white/80 backdrop-blur-xl">
           {/* Header */}
           <div className="p-6 border-b border-gray-200">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent mb-4">
               Messages
             </h1>
             <div className="relative">
@@ -151,7 +151,7 @@ const Messages = () => {
                   onClick={() => setActiveFilter(filter.id)}
                   className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     activeFilter === filter.id
-                      ? "bg-white text-blue-600 shadow-sm"
+                      ? "bg-white text-cyan-500 shadow-sm"
                       : "text-gray-600 hover:bg-white/50"
                   }`}
                 >
@@ -176,7 +176,7 @@ const Messages = () => {
                     ${activeChat?.id === chat.id ? "bg-blue-50/50" : ""}`}
                 >
                   <div className="relative">
-                    <div className="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
+                    <div className="h-12 w-12 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
                       {chat.avatar}
                     </div>
                     {chat.online && (
@@ -198,7 +198,7 @@ const Messages = () => {
                         {chat.lastMessage}
                       </p>
                       {chat.unread > 0 && (
-                        <span className="px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full">
+                        <span className="px-2 py-0.5 bg-cyan-500 text-white text-xs rounded-full">
                           {chat.unread}
                         </span>
                       )}
@@ -217,7 +217,7 @@ const Messages = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="relative">
-                    <div className="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
+                    <div className="h-12 w-12 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
                       {activeChat.avatar}
                     </div>
                     {activeChat.online && (
@@ -254,7 +254,7 @@ const Messages = () => {
                     <div
                       className={`rounded-2xl p-4 ${
                         message.type === "sent"
-                          ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
+                          ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white"
                           : "bg-gray-100 text-gray-800"
                       }`}
                     >
@@ -301,7 +301,7 @@ const Messages = () => {
                 </div>
                 <button
                   type="submit"
-                  className="p-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:opacity-90 transition-opacity"
+                  className="p-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl hover:opacity-90 transition-opacity"
                 >
                   <Send className="h-5 w-5" />
                 </button>

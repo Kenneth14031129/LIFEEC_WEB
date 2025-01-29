@@ -187,7 +187,7 @@ const Dashboard = () => {
                 <input
                   type="text"
                   placeholder="Search history..."
-                  className="pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+                  className="pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 w-64"
                 />
               </div>
               <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50">
@@ -360,7 +360,7 @@ const Dashboard = () => {
                       <h3 className="font-semibold text-gray-800">
                         Notifications
                       </h3>
-                      <button className="text-sm text-blue-600 hover:text-blue-700">
+                      <button className="text-sm text-red-600 hover:text-red-700">
                         Mark all as read
                       </button>
                     </div>
@@ -396,7 +396,7 @@ const Dashboard = () => {
                             </p>
                           </div>
                           {!notification.read && (
-                            <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                            <div className="h-2 w-2 rounded-full bg-red-500"></div>
                           )}
                         </div>
                       </div>
@@ -419,7 +419,7 @@ const Dashboard = () => {
               onClick={() => navigate("/view-profile")}
               className="flex items-center gap-3 p-1 rounded-lg hover:bg-white/80 transition-colors"
             >
-              <div className="h-10 w-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+              <div className="h-10 w-10 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold">A</span>
               </div>
               <div>
@@ -444,7 +444,7 @@ const Dashboard = () => {
           {/* Total Residents Card */}
           <button
             onClick={() => setShowResidentHistory(true)}
-            className="rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 p-6 shadow-lg hover:shadow-xl transition-all duration-300 group"
+            className="rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 p-6 shadow-lg hover:shadow-xl transition-all duration-300 group"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
@@ -539,8 +539,8 @@ const Dashboard = () => {
                         x2="0"
                         y2="1"
                       >
-                        <stop offset="0%" stopColor="#3b82f6" />
-                        <stop offset="100%" stopColor="#8b5cf6" />
+                        <stop offset="0%" stopColor="#06b6d4" />
+                        <stop offset="100%" stopColor="#2563eb" />
                       </linearGradient>
                     </defs>
                   </BarChart>

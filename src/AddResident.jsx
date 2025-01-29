@@ -106,14 +106,14 @@ const AddResident = () => {
         <div className="mb-8 bg-white/80 backdrop-blur-xl p-6 rounded-xl shadow-sm border border-white/20">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">
                 Add Resident
               </h1>
               <p className="text-gray-600 mt-1">
                 Complete the form below to register a new resident
               </p>
             </div>
-            <div className="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+            <div className="h-12 w-12 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center">
               <UserPlus className="h-6 w-6 text-white" />
             </div>
           </div>
@@ -129,7 +129,7 @@ const AddResident = () => {
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center ${
                         activeStep >= step.number
-                          ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
+                          ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white"
                           : "bg-gray-200 text-gray-500"
                       }`}
                     >
@@ -149,7 +149,7 @@ const AddResident = () => {
                     <div
                       className={`h-1 rounded ${
                         activeStep > step.number
-                          ? "bg-gradient-to-r from-blue-500 to-purple-500"
+                          ? "bg-gradient-to-r from-cyan-500 to-blue-600"
                           : "bg-gray-200"
                       }`}
                     />
@@ -220,7 +220,6 @@ const AddResident = () => {
                         <option value="">Select gender</option>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
-                        <option value="other">Other</option>
                       </select>
                     </div>
                   </div>
@@ -266,7 +265,7 @@ const AddResident = () => {
                   <button
                     type="button"
                     onClick={() => setActiveStep(2)}
-                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:opacity-90 transition-opacity"
+                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl hover:opacity-90 transition-opacity"
                   >
                     Next Step
                     <ChevronRight className="h-5 w-5" />
@@ -359,7 +358,7 @@ const AddResident = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
                   >
                     {isSubmitting ? "Adding Resident..." : "Add Resident"}
                     <CheckCircle className="h-5 w-5" />

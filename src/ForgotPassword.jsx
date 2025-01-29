@@ -107,7 +107,7 @@ const ForgotPassword = () => {
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center ${
                         step >= s.number
-                          ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
+                          ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white"
                           : "bg-gray-200 text-gray-500"
                       }`}
                     >
@@ -129,7 +129,7 @@ const ForgotPassword = () => {
                 {/* Progress Line */}
                 <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200">
                   <div
-                    className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+                    className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 transition-all duration-300"
                     style={{
                       width: `${((step - 1) / (steps.length - 1)) * 100}%`,
                     }}
