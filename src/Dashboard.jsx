@@ -17,7 +17,6 @@ import {
   ChevronDown,
   X,
   Calendar,
-  ArrowUpRight,
   UserPlus,
   Filter,
 } from "lucide-react";
@@ -35,76 +34,53 @@ const Dashboard = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [allAlerts, setAllAlerts] = useState([]);
 
   const fetchAllAlerts = async () => {
     try {
       setIsLoading(true);
-      // First, get all residents
       const response = await getResidents();
-      console.log("Raw API response:", response); // Debug log
 
-      // Handle undefined response
-      if (!response) {
-        console.error("No response from getResidents API");
-        setNotifications([]);
-        return;
-      }
+      // Get residents data array
+      let residentsData = Array.isArray(response)
+        ? response
+        : response.data && Array.isArray(response.data)
+        ? response.data
+        : response.residents && Array.isArray(response.residents)
+        ? response.residents
+        : [];
 
-      // Check all possible locations of the data
-      let residentsData;
-      if (Array.isArray(response)) {
-        residentsData = response;
-      } else if (response.data && Array.isArray(response.data)) {
-        residentsData = response.data;
-      } else if (response.residents && Array.isArray(response.residents)) {
-        residentsData = response.residents;
-      } else {
-        console.error("Could not find residents array in response:", response);
-        setNotifications([]);
-        return;
-      }
-
-      console.log("Processed residents data:", residentsData); // Debug log
-
-      // Then fetch alerts for each resident
-      const alertPromises = residentsData.map((resident) => {
-        // Add null check for resident._id
-        if (!resident || !resident._id) {
-          console.error("Invalid resident object:", resident);
-          return Promise.resolve([]); // Return empty array for invalid residents
-        }
-        return getResidentEmergencyAlerts(resident._id);
-      });
+      // Fetch alerts for each resident
+      const alertPromises = residentsData.map((resident) =>
+        resident?._id
+          ? getResidentEmergencyAlerts(resident._id)
+          : Promise.resolve([])
+      );
 
       const allAlertsArrays = await Promise.all(alertPromises);
 
-      // Add debug log for alerts
-      console.log("All alerts arrays:", allAlertsArrays);
-
-      // Flatten and sort all alerts by timestamp
-      const allAlerts = allAlertsArrays
+      // Flatten and sort all alerts
+      const alerts = allAlertsArrays
         .flat()
-        .filter((alert) => alert) // Filter out any null/undefined values
+        .filter((alert) => alert)
         .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-      // Transform alerts into notification format
-      const formattedNotifications = allAlerts.map((alert) => ({
-        id: alert._id,
-        resident: alert.residentName,
-        type: "emergency",
-        message: alert.message,
-        time: formatTimestamp(alert.timestamp),
-        read: alert.read || false,
-      }));
+      setAllAlerts(alerts);
 
-      setNotifications(formattedNotifications);
+      // Also update notifications format for the notifications dropdown
+      setNotifications(
+        alerts.map((alert) => ({
+          id: alert._id,
+          resident: alert.residentName,
+          type: "emergency",
+          message: alert.message,
+          time: formatTimestamp(alert.timestamp),
+          read: alert.read || false,
+        }))
+      );
     } catch (error) {
       console.error("Error fetching alerts:", error);
-      // Log more details about the error
-      if (error.response) {
-        console.error("Error response:", error.response.data);
-        console.error("Error status:", error.response.status);
-      }
+      setAllAlerts([]);
       setNotifications([]);
     } finally {
       setIsLoading(false);
@@ -220,37 +196,6 @@ const Dashboard = () => {
       type: "transfer",
       details: "Internal room transfer",
       time: "11:45 AM",
-    },
-  ];
-
-  // Sample alert history data
-  const alertHistory = [
-    {
-      id: 1,
-      date: "2024-01-18",
-      type: "emergency",
-      description: "Medical emergency",
-      time: "10:15 AM",
-      resident: "John Doe",
-      room: "101",
-    },
-    {
-      id: 2,
-      date: "2024-01-18",
-      type: "medication",
-      description: "Missed medication schedule",
-      time: "09:30 AM",
-      resident: "Maria Garcia",
-      room: "202",
-    },
-    {
-      id: 3,
-      date: "2024-01-17",
-      type: "facility",
-      description: "Maintenance required in common area",
-      time: "03:45 PM",
-      resident: "Robert Wilson",
-      room: "303",
     },
   ];
 
@@ -391,9 +336,9 @@ const Dashboard = () => {
 
           {/* Alert List */}
           <div className="space-y-4">
-            {alertHistory.map((alert) => (
+            {allAlerts.map((alert) => (
               <div
-                key={alert.id}
+                key={alert._id}
                 className="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center justify-between">
@@ -403,18 +348,18 @@ const Dashboard = () => {
                     </div>
                     <div>
                       <h3 className="font-medium text-gray-900">
-                        {alert.resident} - Room {alert.room}
+                        {alert.residentName}
                       </h3>
-                      <p className="text-sm text-gray-500">
-                        {alert.description}
-                      </p>
+                      <p className="text-sm text-gray-500">{alert.message}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium text-gray-900">
-                      {alert.date}
+                      {new Date(alert.timestamp).toLocaleDateString()}
                     </p>
-                    <p className="text-sm text-gray-500">{alert.time}</p>
+                    <p className="text-sm text-gray-500">
+                      {new Date(alert.timestamp).toLocaleTimeString()}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -426,7 +371,7 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-poppins">
       <Sidebar activePage="dashboard" />
 
       <div className="ml-72 p-8">
@@ -562,12 +507,6 @@ const Dashboard = () => {
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
                 <Users className="h-6 w-6 text-white" />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-white bg-white/20 px-2.5 py-1 rounded-full backdrop-blur-sm">
-                  +5.4%
-                </span>
-                <ArrowUpRight className="h-4 w-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
             </div>
             <div className="space-y-1">
               <h3 className="text-sm font-medium text-white/80">
@@ -587,18 +526,14 @@ const Dashboard = () => {
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
                 <AlertTriangle className="h-6 w-6 text-white" />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-white bg-white/20 px-2.5 py-1 rounded-full backdrop-blur-sm">
-                  3 urgent
-                </span>
-                <ArrowUpRight className="h-4 w-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
             </div>
             <div className="space-y-1">
               <h3 className="text-sm font-medium text-white/80">
                 Active Alerts
               </h3>
-              <div className="text-3xl font-bold text-white">12</div>
+              <div className="text-3xl font-bold text-white">
+                {allAlerts.filter((alert) => !alert.read).length}
+              </div>
               <p className="text-xs text-white/70">View all alerts</p>
             </div>
           </button>
