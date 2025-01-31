@@ -181,7 +181,7 @@ const Dashboard = () => {
 
       <div className="ml-72 p-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8 bg-gradient-to-r from-white/80 to-white/60 backdrop-blur-xl p-4 rounded-xl shadow-sm border border-white/20">
+        <div className="flex justify-between items-center mb-8 bg-gradient-to-r from-white/80 to-white/60 p-4 rounded-xl shadow-sm border border-white/20">
           <div className="flex-1 flex items-center gap-4">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -348,7 +348,7 @@ const Dashboard = () => {
 
         {/* Charts */}
         <div className="grid grid-cols-1 gap-6">
-          <div className="rounded-xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-xl shadow-lg">
+          <div className="rounded-xl bg-gradient-to-br from-white/80 to-white/60 shadow-lg">
             <div className="p-6 border-b border-white/20">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-gray-800">
