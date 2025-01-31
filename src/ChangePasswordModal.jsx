@@ -1,6 +1,6 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import { X } from "lucide-react";
+import { X, Eye, EyeOff } from "lucide-react";
 import { changeUserPassword } from "../services/api";
 
 const ChangePasswordModal = ({ onClose, onSuccess }) => {
@@ -10,12 +10,24 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
     confirmNewPassword: "",
   });
   const [error, setError] = useState(null);
+  const [showPasswords, setShowPasswords] = useState({
+    currentPassword: false,
+    newPassword: false,
+    confirmNewPassword: false,
+  });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setPasswordForm((prev) => ({
       ...prev,
       [name]: value,
+    }));
+  };
+
+  const togglePasswordVisibility = (field) => {
+    setShowPasswords((prev) => ({
+      ...prev,
+      [field]: !prev[field],
     }));
   };
 
@@ -29,16 +41,30 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
       return;
     }
 
+    // Additional password strength validation
+    if (passwordForm.newPassword.length < 8) {
+      setError("New password must be at least 8 characters long");
+      return;
+    }
+
     try {
       await changeUserPassword({
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword,
       });
 
-      onSuccess("Password changed successfully");
+      // Reset form and show success message
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmNewPassword: "",
+      });
+
+      onSuccess("Your password has been successfully changed");
       onClose();
     } catch (err) {
-      setError(err.message);
+      // Set a more user-friendly error message
+      setError(err.message || "Failed to change password. Please try again.");
     }
   };
 
@@ -56,7 +82,12 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-4">
-          {error && <div className="text-red-600 text-sm mb-4">{error}</div>}
+          {error && (
+            <div className="text-red-600 text-sm mb-4 bg-red-50 p-3 rounded-md flex items-center">
+              <span className="mr-2">🚫</span>
+              {error}
+            </div>
+          )}
 
           <div className="space-y-4">
             <div>
@@ -66,15 +97,29 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
               >
                 Current Password
               </label>
-              <input
-                type="password"
-                id="currentPassword"
-                name="currentPassword"
-                value={passwordForm.currentPassword}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <div className="relative">
+                <input
+                  type={showPasswords.currentPassword ? "text" : "password"}
+                  id="currentPassword"
+                  name="currentPassword"
+                  value={passwordForm.currentPassword}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                  placeholder="Enter current password"
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility("currentPassword")}
+                  className="absolute inset-y-0 right-0 px-3 flex items-center"
+                >
+                  {showPasswords.currentPassword ? (
+                    <EyeOff className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <Eye className="h-5 w-5 text-gray-400" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div>
@@ -84,15 +129,32 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
               >
                 New Password
               </label>
-              <input
-                type="password"
-                id="newPassword"
-                name="newPassword"
-                value={passwordForm.newPassword}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <div className="relative">
+                <input
+                  type={showPasswords.newPassword ? "text" : "password"}
+                  id="newPassword"
+                  name="newPassword"
+                  value={passwordForm.newPassword}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                  placeholder="Enter new password"
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility("newPassword")}
+                  className="absolute inset-y-0 right-0 px-3 flex items-center"
+                >
+                  {showPasswords.newPassword ? (
+                    <EyeOff className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <Eye className="h-5 w-5 text-gray-400" />
+                  )}
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Password must be at least 8 characters long
+              </p>
             </div>
 
             <div>
@@ -102,15 +164,29 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
               >
                 Confirm New Password
               </label>
-              <input
-                type="password"
-                id="confirmNewPassword"
-                name="confirmNewPassword"
-                value={passwordForm.confirmNewPassword}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <div className="relative">
+                <input
+                  type={showPasswords.confirmNewPassword ? "text" : "password"}
+                  id="confirmNewPassword"
+                  name="confirmNewPassword"
+                  value={passwordForm.confirmNewPassword}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                  placeholder="Confirm new password"
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility("confirmNewPassword")}
+                  className="absolute inset-y-0 right-0 px-3 flex items-center"
+                >
+                  {showPasswords.confirmNewPassword ? (
+                    <EyeOff className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <Eye className="h-5 w-5 text-gray-400" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 

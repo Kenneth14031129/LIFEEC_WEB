@@ -326,18 +326,20 @@ const ViewProfile = () => {
             />
           )}
 
+          {/* Success Message */}
           {passwordChangeMessage && (
-            <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
-              <span>{passwordChangeMessage}</span>
+            <div className="fixed top-4 right-4 z-50 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg shadow-lg flex items-center">
+              <div className="flex-grow">
+                <p className="text-sm font-medium">{passwordChangeMessage}</p>
+              </div>
               <button
                 onClick={() => setPasswordChangeMessage(null)}
-                className="ml-2 text-white hover:text-gray-200"
+                className="ml-4 text-green-700 hover:text-green-900"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
           )}
-
           {/* Security Section */}
           <div className="col-span-12 lg:col-span-7">
             <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 shadow-lg border border-white/20 h-full">
