@@ -249,3 +249,38 @@ export const markAlertsAsRead = async (alertIds) => {
     throw error.response?.data || { message: 'Error marking alerts as read' };
   }
 };
+
+//View Profile
+export const getProfile = async () => {
+  try {
+    const { data } = await api.get('/users/profile');
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error fetching profile' };
+  }
+};
+
+export const updateProfile = async (userData) => {
+  try {
+    console.log('Sending update request with data:', userData);
+    const { data } = await api.put('/users/profile', userData);
+    console.log('Server response:', data);
+    return data;
+  } catch (error) {
+    console.error('Update profile error:', error.response || error);
+    throw error.response?.data || { 
+      message: error.response?.data?.message || error.message || 'Error updating profile' 
+    };
+  }
+};
+
+export const changeUserPassword = async (passwordData) => {
+  try {
+    const { data } = await api.put('/users/change-password', passwordData);
+    return data;
+  } catch (error) {
+    throw error.response?.data || { 
+      message: 'Error changing password' 
+    };
+  }
+};

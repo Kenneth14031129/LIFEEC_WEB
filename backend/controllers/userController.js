@@ -63,7 +63,7 @@ export const getUsers = async (req, res) => {
   }
 };
 
-// Get user profile
+// View Profile
 export const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -72,7 +72,9 @@ export const getProfile = async (req, res) => {
         _id: user._id,
         fullName: user.fullName,
         email: user.email,
-        userType: user.userType
+        userType: user.userType,
+        phone: user.phone || '',
+        location: user.location || ''
       });
     } else {
       res.status(404).json({ message: 'User not found' });
@@ -89,15 +91,21 @@ export const updateProfile = async (req, res) => {
     if (user) {
       user.fullName = req.body.fullName || user.fullName;
       user.email = req.body.email || user.email;
+      user.phone = req.body.phone || user.phone;
+      user.location = req.body.location || user.location;
+      
       if (req.body.password) {
         user.password = req.body.password;
       }
+      
       const updatedUser = await user.save();
       res.json({
         _id: updatedUser._id,
         fullName: updatedUser.fullName,
         email: updatedUser.email,
         userType: updatedUser.userType,
+        phone: updatedUser.phone,
+        location: updatedUser.location,
         token: generateToken(updatedUser._id)
       });
     } else {
@@ -107,6 +115,28 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const changePassword = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    
+    const { currentPassword, newPassword } = req.body;
+
+    // Verify current password
+    if (!await user.matchPassword(currentPassword)) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    // Set new password
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 // Add new user
 export const addUser = async (req, res) => {

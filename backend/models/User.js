@@ -20,6 +20,14 @@ const userSchema = new mongoose.Schema({
     enum: ['admin', 'owner', 'nutritionist', 'relative', 'nurse'],
     required: true
   },
+  phone: {
+    type: String,
+    default: ''
+  },
+  location: {
+    type: String,
+    default: ''
+  },
   createdAt: {
     type: Date,
     default: Date.now
