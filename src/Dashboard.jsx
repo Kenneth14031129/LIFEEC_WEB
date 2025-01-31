@@ -28,6 +28,35 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [allAlerts, setAllAlerts] = useState([]);
   const [totalResidents, setTotalResidents] = useState([0]);
+  const [monthlyStats, setMonthlyStats] = useState([]);
+
+  const processMonthlyStats = (alerts) => {
+    const months = {
+      Jan: { month: "Jan", alerts: 0 },
+      Feb: { month: "Feb", alerts: 0 },
+      Mar: { month: "Mar", alerts: 0 },
+      Apr: { month: "Apr", alerts: 0 },
+      May: { month: "May", alerts: 0 },
+      Jun: { month: "Jun", alerts: 0 },
+      Jul: { month: "Jul", alerts: 0 },
+      Aug: { month: "Aug", alerts: 0 },
+      Sep: { month: "Sep", alerts: 0 },
+      Oct: { month: "Oct", alerts: 0 },
+      Nov: { month: "Nov", alerts: 0 },
+      Dec: { month: "Dec", alerts: 0 },
+    };
+
+    // Process alerts by month
+    alerts.forEach((alert) => {
+      const date = new Date(alert.timestamp);
+      const monthName = date.toLocaleString("en-US", { month: "short" });
+      if (months[monthName]) {
+        months[monthName].alerts++;
+      }
+    });
+
+    return Object.values(months);
+  };
 
   const fetchAllAlerts = async () => {
     try {
@@ -43,10 +72,8 @@ const Dashboard = () => {
         ? response.residents
         : [];
 
-      // Set total residents count
       setTotalResidents(residentsData.length);
 
-      // Fetch alerts for each resident
       const alertPromises = residentsData.map((resident) =>
         resident?._id
           ? getResidentEmergencyAlerts(resident._id)
@@ -55,7 +82,6 @@ const Dashboard = () => {
 
       const allAlertsArrays = await Promise.all(alertPromises);
 
-      // Flatten and sort all alerts
       const alerts = allAlertsArrays
         .flat()
         .filter((alert) => alert)
@@ -63,7 +89,11 @@ const Dashboard = () => {
 
       setAllAlerts(alerts);
 
-      // Also update notifications format for the notifications dropdown
+      // Update monthly statistics with alerts only
+      const monthlyData = processMonthlyStats(alerts);
+      setMonthlyStats(monthlyData);
+
+      // Update notifications
       setNotifications(
         alerts.map((alert) => ({
           id: alert._id,
@@ -118,7 +148,6 @@ const Dashboard = () => {
       );
     } catch (error) {
       console.error("Error marking notifications as read:", error);
-      // Optionally show an error message to the user
     }
   };
 
@@ -145,55 +174,6 @@ const Dashboard = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showNotifications]);
-
-  const monthlyData = [
-    { month: "Jan", residents: 65 },
-    { month: "Feb", residents: 72 },
-    { month: "Mar", residents: 85 },
-    { month: "Apr", residents: 78 },
-    { month: "May", residents: 90 },
-    { month: "Jun", residents: 95 },
-    { month: "Jul", residents: 90 },
-    { month: "Aug", residents: 80 },
-    { month: "Sep", residents: 50 },
-    { month: "Oct", residents: 40 },
-    { month: "Nov", residents: 40 },
-    { month: "Dec", residents: 40 },
-  ];
-
-  // Sample resident history data
-  const residentHistory = [
-    {
-      id: 1,
-      date: "2024-01-18",
-      name: "Maria Garcia",
-      action: "admitted",
-      room: "101",
-      type: "admission",
-      details: "New resident admission",
-      time: "09:30 AM",
-    },
-    {
-      id: 2,
-      date: "2024-01-17",
-      name: "John Smith",
-      action: "admitted",
-      room: "205",
-      type: "discharge",
-      details: "Completed rehabilitation program",
-      time: "02:15 PM",
-    },
-    {
-      id: 3,
-      date: "2024-01-17",
-      name: "Robert Wilson",
-      action: "admitted",
-      room: "303",
-      type: "transfer",
-      details: "Internal room transfer",
-      time: "11:45 AM",
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-poppins">
@@ -311,6 +291,7 @@ const Dashboard = () => {
             </button>
           </div>
         </div>
+
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-800">
             Dashboard Overview
@@ -319,6 +300,7 @@ const Dashboard = () => {
             Here's what's happening in your facility today
           </p>
         </div>
+
         {/* Interactive Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Total Residents Card */}
@@ -342,7 +324,7 @@ const Dashboard = () => {
             </div>
           </button>
 
-          {/* Active Alerts Card */}
+          {/* Total Alerts Card */}
           <button
             onClick={() => setShowAlertHistory(true)}
             className="rounded-xl bg-gradient-to-br from-red-500 to-pink-600 p-6 shadow-lg hover:shadow-xl transition-all duration-300 group"
@@ -363,13 +345,14 @@ const Dashboard = () => {
             </div>
           </button>
         </div>
+
         {/* Charts */}
         <div className="grid grid-cols-1 gap-6">
           <div className="rounded-xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-xl shadow-lg">
             <div className="p-6 border-b border-white/20">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-gray-800">
-                  Resident Statistics
+                  Facility Statistics
                 </h3>
                 <select className="px-3 py-1.5 bg-white/80 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option>Last 12 months</option>
@@ -381,7 +364,7 @@ const Dashboard = () => {
             <div className="px-6 pb-6">
               <div className="h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={monthlyData}>
+                  <BarChart data={monthlyStats}>
                     <CartesianGrid
                       strokeDasharray="3 3"
                       vertical={false}
@@ -398,13 +381,15 @@ const Dashboard = () => {
                       }}
                     />
                     <Bar
-                      dataKey="residents"
-                      fill="url(#colorGradient)"
+                      dataKey="alerts"
+                      name="Alerts"
+                      fill="url(#redGradient)"
                       radius={[4, 4, 0, 0]}
+                      minPointSize={5}
                     />
                     <defs>
                       <linearGradient
-                        id="colorGradient"
+                        id="redGradient"
                         x1="0"
                         y1="0"
                         x2="0"
@@ -420,11 +405,12 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+
         {/* Modals */}
         <ResidentHistory
           isOpen={showResidentHistory}
           onClose={() => setShowResidentHistory(false)}
-          residents={residentHistory}
+          residents={totalResidents}
           isLoading={isLoading}
         />
         <AlertHistory
@@ -433,7 +419,6 @@ const Dashboard = () => {
           alerts={allAlerts}
           isLoading={isLoading}
         />
-        ;
       </div>
     </div>
   );
