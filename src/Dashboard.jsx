@@ -9,23 +9,15 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import {
-  Bell,
-  Users,
-  AlertTriangle,
-  Search,
-  ChevronDown,
-  X,
-  Calendar,
-  UserPlus,
-  Filter,
-} from "lucide-react";
+import { Bell, Users, AlertTriangle, Search } from "lucide-react";
 import Sidebar from "./SideBar";
 import {
   getResidents,
   getResidentEmergencyAlerts,
   markAlertsAsRead,
 } from "../services/api";
+import AlertHistory from "./AlertHistory";
+import ResidentHistory from "./ResidentHistory";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -35,6 +27,7 @@ const Dashboard = () => {
   const [notifications, setNotifications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [allAlerts, setAllAlerts] = useState([]);
+  const [totalResidents, setTotalResidents] = useState([0]);
 
   const fetchAllAlerts = async () => {
     try {
@@ -49,6 +42,9 @@ const Dashboard = () => {
         : response.residents && Array.isArray(response.residents)
         ? response.residents
         : [];
+
+      // Set total residents count
+      setTotalResidents(residentsData.length);
 
       // Fetch alerts for each resident
       const alertPromises = residentsData.map((resident) =>
@@ -199,177 +195,6 @@ const Dashboard = () => {
     },
   ];
 
-  const getActionIcon = (action) => {
-    switch (action) {
-      case "admitted":
-        return <UserPlus className="h-4 w-4 text-blue-500" />;
-    }
-  };
-
-  const ResidentHistoryModal = () => (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden m-4">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-800">
-              Resident History
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Track all resident-related activities
-            </p>
-          </div>
-          <button
-            onClick={() => setShowResidentHistory(false)}
-            className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
-          >
-            <X className="h-5 w-5 text-gray-500" />
-          </button>
-        </div>
-
-        <div className="p-6">
-          {/* Filters and Search */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search history..."
-                  className="pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 w-64"
-                />
-              </div>
-              <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50">
-                <Filter className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-600">Filter</span>
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">Sort by:</span>
-              <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50">
-                <Calendar className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-600">Date</span>
-                <ChevronDown className="h-4 w-4 text-gray-500" />
-              </button>
-            </div>
-          </div>
-
-          {/* History List */}
-          <div className="space-y-4">
-            {residentHistory.map((item) => (
-              <div
-                key={item.id}
-                className="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                      {getActionIcon(item.action)}
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-900">{item.name}</h3>
-                      <p className="text-sm text-gray-500">
-                        {item.details} - Room {item.room}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">
-                      {item.date}
-                    </p>
-                    <p className="text-sm text-gray-500">{item.time}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const AlertHistoryModal = () => (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden m-4">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-800">
-              Alert History
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Track and manage facility alerts
-            </p>
-          </div>
-          <button
-            onClick={() => setShowAlertHistory(false)}
-            className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
-          >
-            <X className="h-5 w-5 text-gray-500" />
-          </button>
-        </div>
-
-        <div className="p-6">
-          {/* Filters and Controls */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search alerts..."
-                  className="pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
-                />
-              </div>
-              <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50">
-                <Filter className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-600">Filter</span>
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">Sort by:</span>
-              <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50">
-                <Calendar className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-600">Date</span>
-                <ChevronDown className="h-4 w-4 text-gray-500" />
-              </button>
-            </div>
-          </div>
-
-          {/* Alert List */}
-          <div className="space-y-4">
-            {allAlerts.map((alert) => (
-              <div
-                key={alert._id}
-                className="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                      <AlertTriangle className="h-4 w-4 text-red-500" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-900">
-                        {alert.residentName}
-                      </h3>
-                      <p className="text-sm text-gray-500">{alert.message}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">
-                      {new Date(alert.timestamp).toLocaleDateString()}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(alert.timestamp).toLocaleTimeString()}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-poppins">
       <Sidebar activePage="dashboard" />
@@ -486,7 +311,6 @@ const Dashboard = () => {
             </button>
           </div>
         </div>
-
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-800">
             Dashboard Overview
@@ -495,7 +319,6 @@ const Dashboard = () => {
             Here's what's happening in your facility today
           </p>
         </div>
-
         {/* Interactive Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Total Residents Card */}
@@ -512,8 +335,10 @@ const Dashboard = () => {
               <h3 className="text-sm font-medium text-white/80">
                 Total Residents
               </h3>
-              <div className="text-3xl font-bold text-white">95</div>
-              <p className="text-xs text-white/70">View complete history</p>
+              <div className="text-3xl font-bold text-white">
+                {totalResidents}
+              </div>
+              <p className="text-xs text-white/70">View all residents</p>
             </div>
           </button>
 
@@ -529,16 +354,15 @@ const Dashboard = () => {
             </div>
             <div className="space-y-1">
               <h3 className="text-sm font-medium text-white/80">
-                Active Alerts
+                Total Alerts
               </h3>
               <div className="text-3xl font-bold text-white">
-                {allAlerts.filter((alert) => !alert.read).length}
+                {allAlerts.length}
               </div>
               <p className="text-xs text-white/70">View all alerts</p>
             </div>
           </button>
         </div>
-
         {/* Charts */}
         <div className="grid grid-cols-1 gap-6">
           <div className="rounded-xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-xl shadow-lg">
@@ -596,10 +420,20 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-
         {/* Modals */}
-        {showResidentHistory && <ResidentHistoryModal />}
-        {showAlertHistory && <AlertHistoryModal />}
+        <ResidentHistory
+          isOpen={showResidentHistory}
+          onClose={() => setShowResidentHistory(false)}
+          residents={residentHistory}
+          isLoading={isLoading}
+        />
+        <AlertHistory
+          isOpen={showAlertHistory}
+          onClose={() => setShowAlertHistory(false)}
+          alerts={allAlerts}
+          isLoading={isLoading}
+        />
+        ;
       </div>
     </div>
   );
