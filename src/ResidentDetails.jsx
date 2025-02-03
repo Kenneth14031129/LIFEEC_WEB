@@ -626,8 +626,8 @@ const ResidentDetails = () => {
             {[
               { id: "overview", label: "Overview", icon: User },
               { id: "health", label: "Health", icon: Heart },
-              { id: "meals", label: "Meals", icon: UtensilsCrossed },
-              { id: "activities", label: "Activities", icon: Activity },
+              { id: "meals", label: "Meal", icon: UtensilsCrossed },
+              { id: "activities", label: "Activity", icon: Activity },
             ].map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
@@ -829,7 +829,7 @@ const ResidentDetails = () => {
                         </div>
                         <div>
                           <h1 className="text-2xl font-bold text-gray-900">
-                            Health Record
+                            Health Plan
                           </h1>
                         </div>
                       </div>
@@ -1295,7 +1295,7 @@ const ResidentDetails = () => {
                           <div className="flex items-center gap-3">
                             <FileText className="h-5 w-5 text-cyan-500" />
                             <span className="font-medium text-cyan-700">
-                              Update Health Record
+                              Update Health Plan
                             </span>
                           </div>
                           <ChevronRight className="h-5 w-5 text-cyan-500" />
@@ -1316,7 +1316,7 @@ const ResidentDetails = () => {
                         <div className="flex items-center gap-3">
                           <FileText className="h-5 w-5 text-cyan-500" />
                           <span className="font-medium text-cyan-700">
-                            Add New Health Record
+                            Add New Health Plan
                           </span>
                         </div>
                         <ChevronRight className="h-5 w-5 text-cyan-500" />
@@ -1407,7 +1407,7 @@ const ResidentDetails = () => {
                           <div className="flex items-center gap-3">
                             <FileText className="h-5 w-5 text-cyan-500" />
                             <span className="font-medium text-cyan-700">
-                              Update Activities
+                              Update Activity Plan
                             </span>
                           </div>
                           <ChevronRight className="h-5 w-5 text-cyan-500" />
@@ -1428,7 +1428,7 @@ const ResidentDetails = () => {
                         <div className="flex items-center gap-3">
                           <Activity className="h-5 w-5 text-cyan-500" />
                           <span className="font-medium text-cyan-700">
-                            Add New Activity
+                            Add New Activity Plan
                           </span>
                         </div>
                         <ChevronRight className="h-5 w-5 text-cyan-500" />
@@ -1443,7 +1443,7 @@ const ResidentDetails = () => {
                           <div className="flex items-center gap-3">
                             <Clock className="h-5 w-5 text-cyan-500" />
                             <span className="font-medium text-cyan-700">
-                              View Activities History
+                              View Activitiy History
                             </span>
                           </div>
                           <ChevronRight className="h-5 w-5 text-cyan-500" />

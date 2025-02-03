@@ -297,7 +297,7 @@ const Dashboard = () => {
             Dashboard Overview
           </h1>
           <p className="text-gray-600">
-            Here's what's happening in your facility today
+            Here&apos;s what&apos;s happening today
           </p>
         </div>
 
@@ -352,7 +352,7 @@ const Dashboard = () => {
             <div className="p-6 border-b border-white/20">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-gray-800">
-                  Facility Statistics
+                  Alert Statistics
                 </h3>
                 <select className="px-3 py-1.5 bg-white/80 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option>Last 12 months</option>

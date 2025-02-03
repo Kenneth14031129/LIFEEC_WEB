@@ -97,8 +97,8 @@ const Login = () => {
             }`}
           >
             <div className="mb-8">
-              <KeySquare className="h-12 w-12 text-blue-600 mb-4" />
-              <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <KeySquare className="h-12 w-12 text-cyan-500 mb-4" />
+              <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">
                 Welcome Back
               </h2>
               <p className="text-gray-600">Please login to your account</p>
@@ -161,7 +161,7 @@ const Login = () => {
 
                 <button
                   onClick={() => navigate("/forgot-password")}
-                  className="text-blue-600 hover:text-blue-500 font-medium"
+                  className="text-cyan-500 hover:text-blue-500 font-medium"
                 >
                   Forgot password?
                 </button>
@@ -170,7 +170,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 rounded-xl text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-lg shadow-blue-500/25 disabled:opacity-70"
+                className="w-full py-3 px-4 rounded-xl text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-blue-700 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 transition-all duration-200 shadow-lg shadow-blue-500/25 disabled:opacity-70"
               >
                 {loading ? "Signing in..." : "Sign in"}
               </button>
@@ -184,8 +184,8 @@ const Login = () => {
             }`}
           >
             <div className="mb-8">
-              <KeySquare className="h-12 w-12 text-blue-600 mb-4" />
-              <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <KeySquare className="h-12 w-12 text-cyan-500 mb-4" />
+              <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">
                 Create Account
               </h2>
               <p className="text-gray-600">Join our community today</p>
@@ -281,7 +281,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 rounded-xl text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-lg shadow-blue-500/25 disabled:opacity-70"
+                className="w-full py-3 px-4 rounded-xl text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-blue-700 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-lg shadow-blue-500/25 disabled:opacity-70"
               >
                 {loading ? "Creating Account..." : "Sign up"}
               </button>
@@ -291,7 +291,7 @@ const Login = () => {
 
         {/* Sliding Welcome Panel */}
         <div
-          className={`absolute top-0 h-full w-1/2 bg-gradient-to-br from-blue-600 to-indigo-600 transition-transform duration-700 ease-in-out ${
+          className={`absolute top-0 h-full w-1/2 bg-gradient-to-r from-cyan-500 to-blue-600 transition-transform duration-700 ease-in-out ${
             isLogin ? "translate-x-full" : "translate-x-0"
           }`}
         >

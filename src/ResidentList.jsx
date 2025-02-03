@@ -227,9 +227,7 @@ const ResidentList = () => {
               <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">
                 Residents List
               </h1>
-              <p className="text-gray-600 mt-2">
-                Manage and monitor resident information
-              </p>
+              <p className="text-gray-600 mt-2">Manage and monitor residents</p>
             </div>
 
             <div className="flex items-center gap-4">
