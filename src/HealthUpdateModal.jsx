@@ -213,8 +213,6 @@ const HealthUpdateModal = ({
                 >
                   <option value="Stable">Stable</option>
                   <option value="Critical">Critical</option>
-                  <option value="Improving">Improving</option>
-                  <option value="Declining">Declining</option>
                 </select>
               </div>
             </div>
