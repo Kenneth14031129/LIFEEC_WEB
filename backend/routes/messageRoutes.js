@@ -8,12 +8,22 @@ const router = express.Router();
 // Get conversations for current user
 router.get('/conversations', protect, async (req, res) => {
   try {
+    // Debug: Log user ID and find all messages
+    console.log('Current user ID:', req.user._id.toString());
+    const allMessages = await Message.find({
+      $or: [
+        { senderId: req.user._id.toString() },
+        { receiverId: req.user._id.toString() }
+      ]
+    });
+    console.log('All messages for user:', allMessages);
+
     const conversations = await Message.aggregate([
       {
         $match: {
           $or: [
-            { senderId: req.user._id },
-            { receiverId: req.user._id }
+            { senderId: req.user._id.toString() },
+            { receiverId: req.user._id.toString() }
           ]
         }
       },
@@ -24,7 +34,7 @@ router.get('/conversations', protect, async (req, res) => {
         $group: {
           _id: {
             $cond: [
-              { $eq: ['$senderId', req.user._id] },
+              { $eq: ['$senderId', req.user._id.toString()] },
               '$receiverId',
               '$senderId'
             ]
@@ -35,8 +45,14 @@ router.get('/conversations', protect, async (req, res) => {
       {
         $lookup: {
           from: 'users',
-          localField: '_id',
-          foreignField: '_id',
+          let: { userId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$_id', { $toObjectId: '$$userId' }] }
+              }
+            }
+          ],
           as: 'userDetails'
         }
       },
@@ -46,20 +62,21 @@ router.get('/conversations', protect, async (req, res) => {
       {
         $project: {
           user: {
-            _id: '$userDetails._id',
+            _id: '$_id',
             fullName: '$userDetails.fullName',
             userType: '$userDetails.userType'
           },
           lastMessage: {
             content: '$lastMessage.content',
             timestamp: '$lastMessage.timestamp',
-            isRead: '$lastMessage.isRead'
+            isRead: '$lastMessage.isRead',
+            senderId: '$lastMessage.senderId'
           },
           unreadCount: {
             $cond: [
               {
                 $and: [
-                  { $eq: ['$lastMessage.receiverId', req.user._id] },
+                  { $eq: ['$lastMessage.receiverId', req.user._id.toString()] },
                   { $eq: ['$lastMessage.isRead', false] }
                 ]
               },
@@ -71,9 +88,14 @@ router.get('/conversations', protect, async (req, res) => {
       }
     ]);
 
+    console.log('Final conversations:', conversations);
     res.json(conversations);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching conversations', error: error.message });
+    console.error('Error in conversations route:', error);
+    res.status(500).json({ 
+      message: 'Error fetching conversations', 
+      error: error.message,
+    });
   }
 });
 

@@ -30,58 +30,6 @@ const Messages = () => {
 
   const ALLOWED_USER_TYPES = ["admin", "nurse", "nutritionist", "relative"];
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        const users = await getUsers();
-
-        // Get and parse user data from localStorage
-        const userData = JSON.parse(localStorage.getItem("user"));
-
-        if (!userData?._id) {
-          throw new Error("No authenticated user found");
-        }
-
-        const formattedChats = users
-          .filter((user) => {
-            // Check if user type is allowed AND user is not the current logged-in user
-            const isAllowedType = ALLOWED_USER_TYPES.includes(
-              user.userType.toLowerCase()
-            );
-            const isNotCurrentUser = user._id !== userData._id;
-
-            return isAllowedType && isNotCurrentUser;
-          })
-          .map((user) => ({
-            id: user._id,
-            name: user.fullName,
-            userType:
-              user.userType.charAt(0).toUpperCase() + user.userType.slice(1),
-            avatar: user.fullName
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .toUpperCase(),
-            online: false,
-            lastMessage: "",
-            time: "",
-            unread: 0,
-          }));
-
-        setChats(formattedChats);
-        setError(null);
-      } catch (err) {
-        setError(err.message || "Failed to load users");
-        console.error("Error fetching users:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUsers();
-  }, []);
-
   const filteredChats = chats
     .filter((chat) => {
       if (activeFilter === "all") return true;
@@ -126,6 +74,12 @@ const Messages = () => {
           getConversations(),
         ]);
 
+        console.log("API Response - Users:", users);
+        console.log("API Response - Conversations:", conversations);
+        console.log("Current user:", JSON.parse(localStorage.getItem("user")));
+
+        console.log("Conversations data:", conversations);
+
         const userData = JSON.parse(localStorage.getItem("user"));
         if (!userData?._id) {
           throw new Error("No authenticated user found");
@@ -133,6 +87,7 @@ const Messages = () => {
 
         // Create a map of last messages from conversations
         const conversationsMap = conversations.reduce((acc, conv) => {
+          console.log("Processing conversation:", conv);
           acc[conv.user._id] = {
             lastMessage: conv.lastMessage.content,
             time: new Date(conv.lastMessage.timestamp).toLocaleTimeString([], {
@@ -143,6 +98,8 @@ const Messages = () => {
           };
           return acc;
         }, {});
+
+        console.log("Conversations map:", conversationsMap);
 
         const formattedChats = users
           .filter((user) => {
