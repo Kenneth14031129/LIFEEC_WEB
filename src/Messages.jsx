@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Search,
   MessageSquare,
@@ -6,112 +6,306 @@ import {
   Send,
   Check,
   CheckCheck,
-  Clock,
 } from "lucide-react";
 import Sidebar from "./SideBar";
+import PropTypes from "prop-types";
+import {
+  getUsers,
+  getConversations,
+  getMessages,
+  sendMessage,
+  markMessagesAsRead,
+} from "../services/api";
 
 const Messages = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [newMessage, setNewMessage] = useState("");
   const [activeChat, setActiveChat] = useState(null);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [chats, setChats] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const messagesEndRef = useRef(null);
 
-  // Sample data for chats
-  const chats = [
-    {
-      id: 1,
-      name: "Kenneth Gaviola",
-      userType: "Nurse",
-      avatar: "KG",
-      online: true,
-      lastMessage: "Patient report has been updated",
-      time: "2 min ago",
-      unread: 2,
-    },
-    {
-      id: 2,
-      name: "Mycko Par",
-      userType: "Nurse",
-      avatar: "MP",
-      online: false,
-      lastMessage: "Medication schedule for Room 101",
-      time: "1 hour ago",
-      unread: 0,
-    },
-    {
-      id: 3,
-      name: "Ronn Adia",
-      userType: "Nutritionist",
-      avatar: "RA",
-      online: true,
-      lastMessage: "Activity schedule for tomorrow",
-      time: "3 hours ago",
-      unread: 1,
-    },
-    {
-      id: 4,
-      name: "JC Castillo",
-      userType: "Relative",
-      avatar: "JC",
-      online: false,
-      lastMessage: "Thank you for the update",
-      time: "5 hours ago",
-      unread: 0,
-    },
-  ];
+  const ALLOWED_USER_TYPES = ["admin", "nurse", "nutritionist", "relative"];
 
-  // Sample messages for active chat
-  const messages = [
-    {
-      id: 1,
-      sender: "Kenneth Gaviola",
-      content: "Good morning! I've just completed my rounds.",
-      time: "9:00 AM",
-      status: "read",
-      type: "received",
-    },
-    {
-      id: 2,
-      sender: "You",
-      content: "Thanks for the update. How are the patients in Ward A?",
-      time: "9:05 AM",
-      status: "read",
-      type: "sent",
-    },
-    {
-      id: 3,
-      sender: "Kenneth Gaviola",
-      content: "All stable. Mr. Johnson's blood pressure has improved.",
-      time: "9:10 AM",
-      status: "read",
-      type: "received",
-    },
-    {
-      id: 4,
-      sender: "You",
-      content: "That's great news! I'll update his chart.",
-      time: "9:12 AM",
-      status: "sent",
-      type: "sent",
-    },
-  ];
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        const users = await getUsers();
 
-  const handleSendMessage = (e) => {
+        // Get and parse user data from localStorage
+        const userData = JSON.parse(localStorage.getItem("user"));
+
+        if (!userData?._id) {
+          throw new Error("No authenticated user found");
+        }
+
+        const formattedChats = users
+          .filter((user) => {
+            // Check if user type is allowed AND user is not the current logged-in user
+            const isAllowedType = ALLOWED_USER_TYPES.includes(
+              user.userType.toLowerCase()
+            );
+            const isNotCurrentUser = user._id !== userData._id;
+
+            return isAllowedType && isNotCurrentUser;
+          })
+          .map((user) => ({
+            id: user._id,
+            name: user.fullName,
+            userType:
+              user.userType.charAt(0).toUpperCase() + user.userType.slice(1),
+            avatar: user.fullName
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .toUpperCase(),
+            online: false,
+            lastMessage: "",
+            time: "",
+            unread: 0,
+          }));
+
+        setChats(formattedChats);
+        setError(null);
+      } catch (err) {
+        setError(err.message || "Failed to load users");
+        console.error("Error fetching users:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const filteredChats = chats
+    .filter((chat) => {
+      if (activeFilter === "all") return true;
+      return chat.userType.toLowerCase() === activeFilter.toLowerCase();
+    })
+    .filter((chat) => {
+      if (!searchQuery) return true;
+      return (
+        chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        chat.userType.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
+
+  const MessageStatus = ({ isRead }) => {
+    return (
+      <div className="text-xs text-gray-500">
+        {isRead ? (
+          <CheckCheck className="h-3 w-3 text-cyan-500" />
+        ) : (
+          <Check className="h-3 w-3 text-gray-400" />
+        )}
+      </div>
+    );
+  };
+
+  MessageStatus.propTypes = {
+    isRead: PropTypes.bool.isRequired,
+  };
+
+  // Scroll to bottom of messages
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Fetch chats and conversations
+  useEffect(() => {
+    const fetchConversations = async () => {
+      try {
+        setLoading(true);
+        const [users, conversations] = await Promise.all([
+          getUsers(),
+          getConversations(),
+        ]);
+
+        const userData = JSON.parse(localStorage.getItem("user"));
+        if (!userData?._id) {
+          throw new Error("No authenticated user found");
+        }
+
+        // Create a map of last messages from conversations
+        const conversationsMap = conversations.reduce((acc, conv) => {
+          acc[conv.user._id] = {
+            lastMessage: conv.lastMessage.content,
+            time: new Date(conv.lastMessage.timestamp).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            unreadCount: conv.unreadCount,
+          };
+          return acc;
+        }, {});
+
+        const formattedChats = users
+          .filter((user) => {
+            const isAllowedType = ALLOWED_USER_TYPES.includes(
+              user.userType.toLowerCase()
+            );
+            const isNotCurrentUser = user._id !== userData._id;
+            return isAllowedType && isNotCurrentUser;
+          })
+          .map((user) => ({
+            id: user._id,
+            name: user.fullName,
+            userType:
+              user.userType.charAt(0).toUpperCase() + user.userType.slice(1),
+            avatar: user.fullName
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .toUpperCase(),
+            online: false,
+            lastMessage: conversationsMap[user._id]?.lastMessage || "",
+            time: conversationsMap[user._id]?.time || "",
+            unread: conversationsMap[user._id]?.unreadCount || 0,
+          }));
+
+        setChats(formattedChats);
+        setError(null);
+      } catch (err) {
+        setError(err.message || "Failed to load conversations");
+        console.error("Error fetching conversations:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchConversations();
+    // Set up periodic refresh (every 30 seconds)
+    const intervalId = setInterval(fetchConversations, 30000);
+    return () => clearInterval(intervalId);
+  }, []);
+
+  // Fetch messages when active chat changes
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (!activeChat) return;
+
+      try {
+        const messagesData = await getMessages(activeChat.id);
+        const formattedMessages = messagesData.map((msg) => ({
+          id: msg._id,
+          sender: msg.senderId, // Since it's a string ID now, not a populated object
+          content: msg.content,
+          time: new Date(msg.timestamp).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          isRead: msg.isRead,
+          type:
+            msg.senderId === JSON.parse(localStorage.getItem("user"))._id
+              ? "sent"
+              : "received",
+        }));
+
+        setMessages(formattedMessages);
+        scrollToBottom();
+
+        if (activeChat.unread > 0) {
+          await markMessagesAsRead(activeChat.id);
+          setChats((prevChats) =>
+            prevChats.map((chat) =>
+              chat.id === activeChat.id ? { ...chat, unread: 0 } : chat
+            )
+          );
+        }
+      } catch (err) {
+        console.error("Error fetching messages:", err);
+      }
+    };
+
+    fetchMessages();
+    const intervalId = setInterval(fetchMessages, 10000);
+    return () => clearInterval(intervalId);
+  }, [activeChat]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !activeChat) return;
 
-    console.log("Sending message:", newMessage);
-    setNewMessage("");
+    try {
+      const sentMessage = await sendMessage(activeChat.id, newMessage.trim());
+
+      // Add new message to the list
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: sentMessage._id,
+          sender: "You",
+          content: sentMessage.content,
+          time: new Date(sentMessage.timestamp).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          isRead: false,
+          type: "sent",
+        },
+      ]);
+
+      // Update last message in chat list
+      setChats((prevChats) =>
+        prevChats.map((chat) =>
+          chat.id === activeChat.id
+            ? {
+                ...chat,
+                lastMessage: newMessage.trim(),
+                time: new Date().toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+              }
+            : chat
+        )
+      );
+
+      setNewMessage("");
+      scrollToBottom();
+    } catch (err) {
+      console.error("Error sending message:", err);
+    }
   };
 
-  const MessageStatus = ({ status }) => {
-    if (status === "sent") return <Clock className="h-3 w-3 text-gray-400" />;
-    if (status === "delivered")
-      return <Check className="h-3 w-3 text-gray-400" />;
-    if (status === "read")
-      return <CheckCheck className="h-3 w-3 text-cyan-500" />;
-    return null;
-  };
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading chats...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center text-red-500">
+          <p>{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -163,49 +357,44 @@ const Messages = () => {
 
           {/* Chat List */}
           <div className="overflow-y-auto h-[calc(100vh-13rem)]">
-            {chats
-              .filter(
-                (chat) =>
-                  activeFilter === "all" || chat.userType === activeFilter
-              )
-              .map((chat) => (
-                <button
-                  key={chat.id}
-                  onClick={() => setActiveChat(chat)}
-                  className={`w-full p-4 flex items-start gap-4 hover:bg-gray-50 transition-colors border-b border-gray-100
-                    ${activeChat?.id === chat.id ? "bg-blue-50/50" : ""}`}
-                >
-                  <div className="relative">
-                    <div className="h-12 w-12 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                      {chat.avatar}
-                    </div>
-                    {chat.online && (
-                      <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-white"></div>
+            {filteredChats.map((chat) => (
+              <button
+                key={chat.id}
+                onClick={() => setActiveChat(chat)}
+                className={`w-full p-4 flex items-start gap-4 hover:bg-gray-50 transition-colors border-b border-gray-100
+        ${activeChat?.id === chat.id ? "bg-blue-50/50" : ""}`}
+              >
+                <div className="relative">
+                  <div className="h-12 w-12 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                    {chat.avatar}
+                  </div>
+                  {chat.online && (
+                    <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-white"></div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-gray-900 truncate">
+                      {chat.name}{" "}
+                      <span className="font-normal text-gray-500">
+                        ({chat.userType})
+                      </span>
+                    </h3>
+                    <span className="text-xs text-gray-500">{chat.time}</span>
+                  </div>
+                  <div className="flex items-center justify-between mt-1">
+                    <p className="text-sm text-gray-600 truncate">
+                      {chat.lastMessage}
+                    </p>
+                    {chat.unread > 0 && (
+                      <span className="px-2 py-0.5 bg-cyan-500 text-white text-xs rounded-full">
+                        {chat.unread}
+                      </span>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-gray-900 truncate">
-                        {chat.name}{" "}
-                        <span className="font-normal text-gray-500">
-                          ({chat.userType})
-                        </span>
-                      </h3>
-                      <span className="text-xs text-gray-500">{chat.time}</span>
-                    </div>
-                    <div className="flex items-center justify-between mt-1">
-                      <p className="text-sm text-gray-600 truncate">
-                        {chat.lastMessage}
-                      </p>
-                      {chat.unread > 0 && (
-                        <span className="px-2 py-0.5 bg-cyan-500 text-white text-xs rounded-full">
-                          {chat.unread}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </button>
-              ))}
+                </div>
+              </button>
+            ))}
           </div>
         </div>
 
@@ -262,20 +451,17 @@ const Messages = () => {
                     </div>
                     <div
                       className={`flex items-center gap-2 mt-1 text-xs text-gray-500 
-                      ${
-                        message.type === "sent"
-                          ? "justify-end"
-                          : "justify-start"
-                      }`}
+          ${message.type === "sent" ? "justify-end" : "justify-start"}`}
                     >
                       {message.time}
                       {message.type === "sent" && (
-                        <MessageStatus status={message.status} />
+                        <MessageStatus isRead={message.isRead} />
                       )}
                     </div>
                   </div>
                 </div>
               ))}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Message Input */}

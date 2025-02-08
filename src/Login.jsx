@@ -29,8 +29,10 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await loginUser(loginData.email, loginData.password);
+      const userData = await loginUser(loginData.email, loginData.password);
+      // Store both authentication status and user data
       localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("user", JSON.stringify(userData)); // Add this line
       navigate("/dashboard");
     } catch (error) {
       setError(error.message || "Invalid credentials");

@@ -11,7 +11,7 @@ const residentSchema = new mongoose.Schema({
   },
   gender: {
     type: String,
-    enum: ['male', 'female', 'other'],
+    enum: ['Male', 'Female'],
     required: [true, 'Gender is required']
   },
   contactNumber: {

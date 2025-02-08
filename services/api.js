@@ -284,3 +284,57 @@ export const changeUserPassword = async (passwordData) => {
     };
   }
 };
+
+//Messages
+// Get all conversations for current user
+export const getConversations = async () => {
+  try {
+    const { data } = await api.get('/conversations');
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error fetching conversations' };
+  }
+};
+
+// Get messages between current user and specified user
+export const getMessages = async (userId) => {
+  try {
+    const { data } = await api.get(`/messages/${userId}`);
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error fetching messages' };
+  }
+};
+
+// Send a new message
+export const sendMessage = async (receiverId, content) => {
+  try {
+    const { data } = await api.post('/messages', {
+      receiverId,
+      content
+    });
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error sending message' };
+  }
+};
+
+// Mark messages from a sender as delivered
+export const markMessagesAsDelivered = async (senderId) => {
+  try {
+    const { data } = await api.put(`/messages/deliver/${senderId}`);
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error marking messages as delivered' };
+  }
+};
+
+// Mark messages from a sender as read
+export const markMessagesAsRead = async (senderId) => {
+  try {
+    const { data } = await api.put(`/messages/${senderId}/read`);
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error marking messages as read' };
+  }
+};
