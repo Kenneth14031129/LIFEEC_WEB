@@ -119,7 +119,7 @@ export const getMealRecord = async (residentId) => {
     return data;
   } catch (error) {
     if (error.response?.status === 404) {
-      return { mealRecord: null };
+      return { mealRecords: [] };
     }
     throw error;
   }

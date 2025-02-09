@@ -209,9 +209,6 @@ const ResidentDetails = () => {
 
       if (mealRecordResponse.mealRecords) {
         setMealRecords(mealRecordResponse.mealRecords);
-      } else if (mealRecordResponse.mealRecord) {
-        // Backward compatibility if API still returns single record
-        setMealRecords([mealRecordResponse.mealRecord].filter(Boolean));
       }
 
       // Safely handle activities data
@@ -283,24 +280,25 @@ const ResidentDetails = () => {
           assessmentNotes: latestHealthRecord?.assessment || "",
           instructions: latestHealthRecord?.instructions || "",
         },
-        meals: mealRecordResponse.mealRecord
+        meals: mealRecordResponse.mealRecords?.[0]
           ? {
-              dietaryNeeds: mealRecordResponse.mealRecord.dietaryNeeds,
-              nutritionalGoals: mealRecordResponse.mealRecord.nutritionalGoals,
-              date: mealRecordResponse.mealRecord.date,
-              breakfast: mealRecordResponse.mealRecord.breakfast,
-              lunch: mealRecordResponse.mealRecord.lunch,
-              snacks: mealRecordResponse.mealRecord.snacks,
-              dinner: mealRecordResponse.mealRecord.dinner,
+              dietaryNeeds: mealRecordResponse.mealRecords[0].dietaryNeeds,
+              nutritionalGoals:
+                mealRecordResponse.mealRecords[0].nutritionalGoals,
+              date: mealRecordResponse.mealRecords[0].date,
+              breakfast: mealRecordResponse.mealRecords[0].breakfast,
+              lunch: mealRecordResponse.mealRecords[0].lunch,
+              snacks: mealRecordResponse.mealRecords[0].snacks,
+              dinner: mealRecordResponse.mealRecords[0].dinner,
             }
           : {
               dietaryNeeds: "",
               nutritionalGoals: "",
               date: new Date().toISOString().split("T")[0],
-              breakfast: "",
-              lunch: "",
-              snacks: "",
-              dinner: "",
+              breakfast: [],
+              lunch: [],
+              snacks: [],
+              dinner: [],
             },
         activities: activities,
       };

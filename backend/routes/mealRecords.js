@@ -24,15 +24,15 @@ router.post('/residents/:residentId/meals', protect, async (req, res) => {
 // Get meal record for a resident
 router.get('/residents/:residentId/meals', protect, async (req, res) => {
   try {
-    const mealRecord = await MealRecord.findOne({ 
+    const mealRecords = await MealRecord.find({ 
       residentId: req.params.residentId 
-    }).sort({ createdAt: -1 });
+    }).sort({ createdAt: -1 }); // Sort in descending order
     
-    if (!mealRecord) {
-      return res.status(404).json({ message: 'No meal record found for this resident' });
+    if (!mealRecords || mealRecords.length === 0) {
+      return res.status(404).json({ message: 'No meal records found for this resident' });
     }
     
-    res.json({ mealRecord });
+    res.json({ mealRecords }); // Note the plural 'mealRecords'
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
