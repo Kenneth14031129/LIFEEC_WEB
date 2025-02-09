@@ -4,9 +4,9 @@ import {
   Calendar,
   FileText,
   UtensilsCrossed,
-  Heart,
   Apple,
   Pizza,
+  AlertCircle,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -32,6 +32,22 @@ const MealReviewModal = ({ isOpen, onClose, mealRecords }) => {
       }
       return true;
     });
+
+  const renderMealItems = (items) => {
+    if (!Array.isArray(items) || items.length === 0) {
+      return <p className="text-gray-500 italic">No items specified</p>;
+    }
+
+    return (
+      <ul className="list-disc list-inside space-y-1">
+        {items.map((item, index) => (
+          <li key={index} className="text-gray-700">
+            {item}
+          </li>
+        ))}
+      </ul>
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto font-[Poppins]">
@@ -100,7 +116,7 @@ const MealReviewModal = ({ isOpen, onClose, mealRecords }) => {
                   {/* Dietary Needs */}
                   <div className="bg-red-50/30 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <UtensilsCrossed className="h-5 w-5 text-red-500" />
+                      <AlertCircle className="h-5 w-5 text-red-500" />
                       <h3 className="font-medium text-gray-900">
                         Dietary Needs
                       </h3>
@@ -111,9 +127,9 @@ const MealReviewModal = ({ isOpen, onClose, mealRecords }) => {
                   </div>
 
                   {/* Nutritional Goals */}
-                  <div className="bg-green-50/30 rounded-lg p-4">
+                  <div className="bg-red-50/30 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <Heart className="h-5 w-5 text-green-500" />
+                      <AlertCircle className="h-5 w-5 text-red-500" />
                       <h3 className="font-medium text-gray-900">
                         Nutritional Goals
                       </h3>
@@ -132,9 +148,7 @@ const MealReviewModal = ({ isOpen, onClose, mealRecords }) => {
                       <Apple className="h-5 w-5 text-green-500" />
                       <h3 className="font-medium text-gray-900">Breakfast</h3>
                     </div>
-                    <p className="text-gray-700">
-                      {record.breakfast || "No breakfast specified"}
-                    </p>
+                    {renderMealItems(record.breakfast)}
                   </div>
 
                   {/* Lunch */}
@@ -143,9 +157,7 @@ const MealReviewModal = ({ isOpen, onClose, mealRecords }) => {
                       <Pizza className="h-5 w-5 text-orange-500" />
                       <h3 className="font-medium text-gray-900">Lunch</h3>
                     </div>
-                    <p className="text-gray-700">
-                      {record.lunch || "No lunch specified"}
-                    </p>
+                    {renderMealItems(record.lunch)}
                   </div>
 
                   {/* Snacks */}
@@ -154,9 +166,7 @@ const MealReviewModal = ({ isOpen, onClose, mealRecords }) => {
                       <Apple className="h-5 w-5 text-yellow-500" />
                       <h3 className="font-medium text-gray-900">Snacks</h3>
                     </div>
-                    <p className="text-gray-700">
-                      {record.snacks || "No snacks specified"}
-                    </p>
+                    {renderMealItems(record.snacks)}
                   </div>
 
                   {/* Dinner */}
@@ -165,9 +175,7 @@ const MealReviewModal = ({ isOpen, onClose, mealRecords }) => {
                       <UtensilsCrossed className="h-5 w-5 text-blue-500" />
                       <h3 className="font-medium text-gray-900">Dinner</h3>
                     </div>
-                    <p className="text-gray-700">
-                      {record.dinner || "No dinner specified"}
-                    </p>
+                    {renderMealItems(record.dinner)}
                   </div>
                 </div>
               </div>
@@ -198,10 +206,10 @@ MealReviewModal.propTypes = {
       createdAt: PropTypes.string,
       dietaryNeeds: PropTypes.string,
       nutritionalGoals: PropTypes.string,
-      breakfast: PropTypes.string,
-      lunch: PropTypes.string,
-      snacks: PropTypes.string,
-      dinner: PropTypes.string,
+      breakfast: PropTypes.arrayOf(PropTypes.string),
+      lunch: PropTypes.arrayOf(PropTypes.string),
+      snacks: PropTypes.arrayOf(PropTypes.string),
+      dinner: PropTypes.arrayOf(PropTypes.string),
     })
   ).isRequired,
 };

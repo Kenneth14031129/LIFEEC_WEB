@@ -13,10 +13,10 @@ const mealRecordSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  breakfast: String,
-  lunch: String,
-  snacks: String,
-  dinner: String,
+  breakfast: [String], // Changed to array
+  lunch: [String],     // Changed to array
+  snacks: [String],    // Changed to array
+  dinner: [String],
   createdAt: {
     type: Date,
     default: Date.now

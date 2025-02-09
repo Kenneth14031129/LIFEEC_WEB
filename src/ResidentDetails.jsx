@@ -12,9 +12,6 @@ import {
   ChevronRight,
   ArrowLeft,
   FileText,
-  AlertTriangle,
-  Apple,
-  Pizza,
   Phone,
   Mail,
   Calendar,
@@ -28,6 +25,7 @@ import ActivitiesUpdateModal from "./ActivitiesUpdateModal";
 import HealthReviewModal from "./HealthReviewModal";
 import MealReviewModal from "./MealReviewModal";
 import ActivitiesReviewModal from "./ActivitiesReviewModal";
+import MealDisplaySection from "./MealDisplaySection";
 import {
   getResidents,
   createHealthRecord,
@@ -873,7 +871,7 @@ const ResidentDetails = () => {
                       <div className="border border-gray-200 rounded-lg p-6">
                         <div className="flex items-center gap-3 mb-4">
                           <div className="p-2 bg-red-50 rounded-lg">
-                            <AlertTriangle className="h-5 w-5 text-red-500" />
+                            <AlertCircle className="h-5 w-5 text-red-500" />
                           </div>
                           <h2 className="text-lg font-semibold text-gray-900">
                             Allergies
@@ -906,7 +904,7 @@ const ResidentDetails = () => {
                       <div className="border border-gray-200 rounded-lg p-6">
                         <div className="flex items-center gap-3 mb-4">
                           <div className="p-2 bg-red-50 rounded-lg">
-                            <AlertTriangle className="h-5 w-5 text-red-500" />
+                            <AlertCircle className="h-5 w-5 text-red-500" />
                           </div>
                           <h2 className="text-lg font-semibold text-gray-900">
                             Medical Conditions
@@ -1167,139 +1165,20 @@ const ResidentDetails = () => {
             {/* Meals Tab Content */}
             {activeTab === "meals" && (
               <div className="space-y-6 font-[Poppins]">
-                {!residentData.meals.breakfast &&
-                !residentData.meals.lunch &&
-                !residentData.meals.dinner ? (
+                {!residentData.meals.breakfast?.length &&
+                !residentData.meals.lunch?.length &&
+                !residentData.meals.dinner?.length ? (
                   <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-white/20 text-center">
                     <UtensilsCrossed className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
                       No Meal Plan Added
                     </h3>
                     <p className="text-gray-600 mb-4">
-                      Set up the residents meal plan using the quick actions
-                      panel.
+                      Set up the meal plan using the quick actions panel.
                     </p>
                   </div>
                 ) : (
-                  <div className="bg-white rounded-xl p-8 shadow-lg">
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
-                      <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 text-cyan-500">
-                          <UtensilsCrossed className="h-full w-full" />
-                        </div>
-                        <div>
-                          <h1 className="text-2xl font-bold text-gray-900">
-                            Meal Plan
-                          </h1>
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500">Date:</span>
-                          <span className="font-medium">
-                            {residentData.meals.date || "Not specified"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Dietary Information Section */}
-                    <div className="grid grid-cols-2 gap-6 mb-6">
-                      {/* Dietary Needs */}
-                      <div className="border border-gray-200 rounded-lg p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="p-2 bg-red-50 rounded-lg">
-                            <AlertCircle className="h-5 w-5 text-red-500" />
-                          </div>
-                          <h2 className="text-lg font-semibold text-gray-900">
-                            Dietary Needs
-                          </h2>
-                        </div>
-                        <div className="p-4 bg-red-50/50 rounded-lg">
-                          <p className="text-gray-900">
-                            {residentData.meals.dietaryNeeds ||
-                              "No dietary needs specified"}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Nutritional Goals */}
-                      <div className="border border-gray-200 rounded-lg p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="p-2 bg-cyan-50 rounded-lg">
-                            <Heart className="h-5 w-5 text-cyan-500" />
-                          </div>
-                          <h2 className="text-lg font-semibold text-gray-900">
-                            Nutritional Goals
-                          </h2>
-                        </div>
-                        <div className="p-4 bg-cyan-50/50 rounded-lg">
-                          <p className="text-gray-900">
-                            {residentData.meals.nutritionalGoals ||
-                              "No nutritional goals specified"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Meal Schedule Section */}
-                    <div className="border border-gray-200 rounded-lg p-6">
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="p-2 bg-cyan-50 rounded-lg">
-                          <UtensilsCrossed className="h-5 w-5 text-cyan-500" />
-                        </div>
-                        <h2 className="text-lg font-semibold text-gray-900">
-                          Daily Meal Schedule
-                        </h2>
-                      </div>
-                      <div className="space-y-4">
-                        {["breakfast", "lunch", "snacks", "dinner"].map(
-                          (meal, index) => (
-                            <div
-                              key={index}
-                              className="p-4 bg-gray-50/80 rounded-lg border border-gray-100"
-                            >
-                              <div className="flex items-center gap-4">
-                                <div
-                                  className={`h-10 w-10 rounded-lg flex items-center justify-center ${
-                                    meal === "breakfast"
-                                      ? "bg-cyan-50"
-                                      : meal === "lunch"
-                                      ? "bg-cyan-50"
-                                      : meal === "snacks"
-                                      ? "bg-cyan-50"
-                                      : "bg-cyan-50"
-                                  }`}
-                                >
-                                  {meal === "breakfast" ? (
-                                    <Apple
-                                      className={`h-5 w-5 text-cyan-500`}
-                                    />
-                                  ) : meal === "lunch" ? (
-                                    <Pizza className="h-5 w-5 text-cyan-500" />
-                                  ) : meal === "snacks" ? (
-                                    <Apple className="h-5 w-5 text-cyan-500" />
-                                  ) : (
-                                    <UtensilsCrossed className="h-5 w-5 text-cyan-500" />
-                                  )}
-                                </div>
-                                <div className="flex-1">
-                                  <h4 className="font-medium text-gray-900 capitalize mb-1">
-                                    {meal}
-                                  </h4>
-                                  <p className="text-gray-600">
-                                    {residentData.meals[meal] ||
-                                      "No meal specified"}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  <MealDisplaySection mealData={residentData.meals} />
                 )}
               </div>
             )}
