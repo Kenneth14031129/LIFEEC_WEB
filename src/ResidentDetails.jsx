@@ -40,7 +40,6 @@ import {
   updateActivitiesRecord,
   createActivitiesRecord,
 } from "../services/api";
-import axios from "axios";
 import toast from "react-hot-toast";
 
 const ResidentDetails = () => {
@@ -269,11 +268,19 @@ const ResidentDetails = () => {
                 },
               ]
             : [],
-          conditions: latestHealthRecord
-            ? [latestHealthRecord.medicalCondition]
+          // Convert allergies to array if it's a string
+          conditions: latestHealthRecord?.medicalCondition
+            ? typeof latestHealthRecord.medicalCondition === "string"
+              ? latestHealthRecord.medicalCondition
+                  .split(",")
+                  .map((c) => c.trim())
+              : latestHealthRecord.medicalCondition
             : resident.conditions || [],
-          allergies: latestHealthRecord
-            ? [latestHealthRecord.allergies]
+          // Convert allergies to array if it's a string
+          allergies: latestHealthRecord?.allergies
+            ? typeof latestHealthRecord.allergies === "string"
+              ? latestHealthRecord.allergies.split(",").map((a) => a.trim())
+              : latestHealthRecord.allergies
             : resident.allergies || [],
           assessmentNotes: latestHealthRecord?.assessment || "",
           instructions: latestHealthRecord?.instructions || "",
@@ -368,18 +375,16 @@ const ResidentDetails = () => {
             time: med.medicationTime,
             status: med.isMedicationTaken ? "Taken" : "Pending",
           })),
-          conditions: [newHealthRecord.medicalCondition],
-          allergies: [newHealthRecord.allergies],
+          conditions: Array.isArray(newHealthRecord.medicalCondition)
+            ? newHealthRecord.medicalCondition
+            : [newHealthRecord.medicalCondition],
+          allergies: Array.isArray(newHealthRecord.allergies)
+            ? newHealthRecord.allergies
+            : [newHealthRecord.allergies],
           assessmentNotes: newHealthRecord.assessment,
           instructions: newHealthRecord.instructions,
         },
       }));
-
-      // Update resident status if health status is critical
-      await axios.patch(`/api/residents/${id}`, {
-        status: newHealthRecord.status === "Critical" ? "inactive" : "active",
-        lastHealthUpdate: new Date().toISOString(),
-      });
 
       setShowHealthModal(false);
     } catch (error) {
@@ -875,16 +880,24 @@ const ResidentDetails = () => {
                           </h2>
                         </div>
                         <div className="space-y-2">
-                          {residentData.health.allergies.map(
-                            (allergy, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center gap-3 p-3 bg-red-50/50 rounded-lg"
-                              >
-                                <div className="h-2 w-2 bg-red-500 rounded-full"></div>
-                                <span className="text-gray-600">{allergy}</span>
-                              </div>
+                          {residentData.health.allergies.length > 0 ? (
+                            residentData.health.allergies.map(
+                              (allergy, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center gap-3 p-3 bg-red-50/50 rounded-lg"
+                                >
+                                  <div className="h-2 w-2 bg-red-500 rounded-full"></div>
+                                  <span className="text-gray-600">
+                                    {allergy}
+                                  </span>
+                                </div>
+                              )
                             )
+                          ) : (
+                            <p className="text-gray-500">
+                              No allergies recorded
+                            </p>
                           )}
                         </div>
                       </div>
@@ -900,18 +913,24 @@ const ResidentDetails = () => {
                           </h2>
                         </div>
                         <div className="space-y-2">
-                          {residentData.health.conditions.map(
-                            (condition, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center gap-3 p-3 bg-red-50/50 rounded-lg"
-                              >
-                                <div className="h-2 w-2 bg-red-500 rounded-full"></div>
-                                <span className="text-gray-600">
-                                  {condition}
-                                </span>
-                              </div>
+                          {residentData.health.conditions.length > 0 ? (
+                            residentData.health.conditions.map(
+                              (condition, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center gap-3 p-3 bg-red-50/50 rounded-lg"
+                                >
+                                  <div className="h-2 w-2 bg-red-500 rounded-full"></div>
+                                  <span className="text-gray-600">
+                                    {condition}
+                                  </span>
+                                </div>
+                              )
                             )
+                          ) : (
+                            <p className="text-gray-500">
+                              No medical conditions recorded
+                            </p>
                           )}
                         </div>
                       </div>

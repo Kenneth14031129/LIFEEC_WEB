@@ -163,9 +163,27 @@ const HealthReviewModal = ({ isOpen, onClose, healthRecords }) => {
                           Allergies
                         </h3>
                       </div>
-                      <p className="text-gray-600">
-                        {record.allergies || "None reported"}
-                      </p>
+                      <div className="space-y-2">
+                        {Array.isArray(record.allergies) ? (
+                          record.allergies.length > 0 ? (
+                            record.allergies.map((allergy, idx) => (
+                              <div
+                                key={idx}
+                                className="flex items-center gap-2"
+                              >
+                                <div className="h-2 w-2 bg-red-500 rounded-full"></div>
+                                <p className="text-gray-600">{allergy}</p>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-gray-600">None reported</p>
+                          )
+                        ) : (
+                          <p className="text-gray-600">
+                            {record.allergies || "None reported"}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
                     {/* Medical Condition */}
@@ -176,9 +194,27 @@ const HealthReviewModal = ({ isOpen, onClose, healthRecords }) => {
                           Medical Condition
                         </h3>
                       </div>
-                      <p className="text-gray-600">
-                        {record.medicalCondition || "None reported"}
-                      </p>
+                      <div className="space-y-2">
+                        {Array.isArray(record.medicalCondition) ? (
+                          record.medicalCondition.length > 0 ? (
+                            record.medicalCondition.map((condition, idx) => (
+                              <div
+                                key={idx}
+                                className="flex items-center gap-2"
+                              >
+                                <div className="h-2 w-2 bg-red-500 rounded-full"></div>
+                                <p className="text-gray-600">{condition}</p>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-gray-600">None reported</p>
+                          )
+                        ) : (
+                          <p className="text-gray-600">
+                            {record.medicalCondition || "None reported"}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -338,8 +374,14 @@ HealthReviewModal.propTypes = {
       status: PropTypes.string,
       date: PropTypes.string,
       createdAt: PropTypes.string,
-      allergies: PropTypes.string,
-      medicalCondition: PropTypes.string,
+      allergies: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.arrayOf(PropTypes.string),
+      ]),
+      medicalCondition: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.arrayOf(PropTypes.string),
+      ]),
       // Support both old and new format
       medications: PropTypes.oneOfType([
         PropTypes.string,

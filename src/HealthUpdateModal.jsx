@@ -12,8 +12,8 @@ const HealthUpdateModal = ({
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
     status: "Stable",
-    allergies: "",
-    medicalCondition: "",
+    allergies: [],
+    medicalCondition: [],
     medications: [
       {
         name: "",
@@ -27,6 +27,50 @@ const HealthUpdateModal = ({
     instructions: "",
   });
 
+  const handleAddAllergy = () => {
+    setFormData((prev) => ({
+      ...prev,
+      allergies: [...prev.allergies, ""],
+    }));
+  };
+
+  const handleRemoveAllergy = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      allergies: prev.allergies.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleAllergyChange = (index, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      allergies: prev.allergies.map((item, i) => (i === index ? value : item)),
+    }));
+  };
+
+  const handleAddCondition = () => {
+    setFormData((prev) => ({
+      ...prev,
+      medicalCondition: [...prev.medicalCondition, ""],
+    }));
+  };
+
+  const handleRemoveCondition = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      medicalCondition: prev.medicalCondition.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleConditionChange = (index, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      medicalCondition: prev.medicalCondition.map((item, i) =>
+        i === index ? value : item
+      ),
+    }));
+  };
+
   // Initialize form with initialData when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -35,8 +79,8 @@ const HealthUpdateModal = ({
         setFormData({
           date: new Date().toISOString().split("T")[0],
           status: "Stable",
-          allergies: "",
-          medicalCondition: "",
+          allergies: [],
+          medicalCondition: [],
           medications: [
             {
               name: "",
@@ -50,35 +94,39 @@ const HealthUpdateModal = ({
           instructions: "",
         });
       } else if (healthRecords.length > 0) {
-        const latestRecord = healthRecords[0];
+        const recordToEdit =
+          healthRecords.find((record) => record.date === formData.date) ||
+          healthRecords[0];
 
-        // Check for new or old format
-        const medications = Array.isArray(latestRecord.allMedications)
-          ? latestRecord.allMedications
-          : latestRecord.medications
-          ? [
-              {
-                name: latestRecord.medications,
-                dosage: latestRecord.dosage,
-                quantity: latestRecord.quantity || "",
-                medicationTime: latestRecord.medicationTime || "",
-                isMedicationTaken: latestRecord.isMedicationTaken || false,
-              },
-            ]
-          : [];
+        // Convert all medications to the new format
+        const medications =
+          recordToEdit.allMedications ||
+          (recordToEdit.medications
+            ? Array.isArray(recordToEdit.medications)
+              ? recordToEdit.medications
+              : [
+                  {
+                    name: recordToEdit.medications,
+                    dosage: recordToEdit.dosage,
+                    quantity: recordToEdit.quantity || "",
+                    medicationTime: recordToEdit.medicationTime || "",
+                    isMedicationTaken: recordToEdit.isMedicationTaken || false,
+                  },
+                ]
+            : []);
 
         setFormData({
-          date: latestRecord.date,
-          status: latestRecord.status || "Stable",
-          allergies: latestRecord.allergies || "",
-          medicalCondition: latestRecord.medicalCondition || "",
-          medications,
-          assessment: latestRecord.assessment || "",
-          instructions: latestRecord.instructions || "",
+          date: recordToEdit.date,
+          status: recordToEdit.status || "Stable",
+          allergies: recordToEdit.allergies || [],
+          medicalCondition: recordToEdit.medicalCondition || [],
+          medications: medications,
+          assessment: recordToEdit.assessment || "",
+          instructions: recordToEdit.instructions || "",
         });
       }
     }
-  }, [isOpen, isAddingNew, healthRecords]);
+  }, [isOpen, isAddingNew, healthRecords, formData.date]);
 
   const handleAddMedication = () => {
     setFormData({
@@ -117,8 +165,12 @@ const HealthUpdateModal = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Submit the full form data with medications array
-    onSubmit(formData);
+    // Ensure medications are properly formatted
+    const submissionData = {
+      ...formData,
+      allMedications: formData.medications,
+    };
+    onSubmit(submissionData);
     onClose();
   };
 
@@ -175,39 +227,93 @@ const HealthUpdateModal = ({
             </div>
           </div>
 
-          {/* Allergies and Medical Condition */}
           <div className="grid grid-cols-2 gap-4">
+            {/* Allergies */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Allergies
-              </label>
-              <input
-                type="text"
-                value={formData.allergies}
-                onChange={(e) =>
-                  setFormData({ ...formData, allergies: e.target.value })
-                }
-                className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Enter allergies"
-              />
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Allergies
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAddAllergy}
+                  className="flex items-center gap-2 px-2 py-1 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Allergy
+                </button>
+              </div>
+              <div className="space-y-2">
+                {formData.allergies.map((allergy, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <span className="text-gray-500">•</span>
+                    <input
+                      type="text"
+                      value={allergy}
+                      onChange={(e) =>
+                        handleAllergyChange(index, e.target.value)
+                      }
+                      className="flex-1 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="Enter allergy"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveAllergy(index)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+                {formData.allergies.length === 0 && (
+                  <p className="text-sm text-gray-500">No allergies added</p>
+                )}
+              </div>
             </div>
 
+            {/* Medical Conditions */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Medical Condition
-              </label>
-              <input
-                type="text"
-                value={formData.medicalCondition}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    medicalCondition: e.target.value,
-                  })
-                }
-                className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Enter medical condition"
-              />
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Medical Conditions
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAddCondition}
+                  className="flex items-center gap-2 px-2 py-1 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Condition
+                </button>
+              </div>
+              <div className="space-y-2">
+                {formData.medicalCondition.map((condition, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <span className="text-gray-500">•</span>
+                    <input
+                      type="text"
+                      value={condition}
+                      onChange={(e) =>
+                        handleConditionChange(index, e.target.value)
+                      }
+                      className="flex-1 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="Enter medical condition"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCondition(index)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+                {formData.medicalCondition.length === 0 && (
+                  <p className="text-sm text-gray-500">
+                    No medical conditions added
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
@@ -404,8 +510,14 @@ HealthUpdateModal.propTypes = {
       _id: PropTypes.string,
       date: PropTypes.string,
       status: PropTypes.string,
-      allergies: PropTypes.string,
-      medicalCondition: PropTypes.string,
+      allergies: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.arrayOf(PropTypes.string),
+      ]),
+      medicalCondition: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.arrayOf(PropTypes.string),
+      ]),
       // Support both old and new format
       medications: PropTypes.oneOfType([
         PropTypes.string, // Old format: single medication name

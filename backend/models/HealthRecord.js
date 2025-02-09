@@ -30,8 +30,12 @@ const healthRecordSchema = new mongoose.Schema({
     required: true,
     enum: ['Stable', 'Critical']
   },
-  allergies: String,
-  medicalCondition: String,
+  allergies: [{
+    type: String
+  }],
+  medicalCondition: [{
+    type: String
+  }],
   medications: [medicationSchema],
   assessment: String,
   instructions: String,

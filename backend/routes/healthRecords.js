@@ -8,13 +8,15 @@ const router = express.Router();
 // Create a new health record
 router.post('/residents/:residentId/health', protect, async (req, res) => {
   try {
-    // Handle both new and old format
+    // Ensure allergies and medicalCondition are arrays
     const healthData = {
       ...req.body,
-      residentId: req.params.residentId
+      residentId: req.params.residentId,
+      allergies: Array.isArray(req.body.allergies) ? req.body.allergies : [req.body.allergies].filter(Boolean),
+      medicalCondition: Array.isArray(req.body.medicalCondition) ? req.body.medicalCondition : [req.body.medicalCondition].filter(Boolean)
     };
 
-    // Convert old format to new format if necessary
+    // Convert medications to the proper format if needed
     if (req.body.medications && typeof req.body.medications === 'string') {
       healthData.medications = [{
         name: req.body.medications,
@@ -23,12 +25,6 @@ router.post('/residents/:residentId/health', protect, async (req, res) => {
         medicationTime: req.body.medicationTime,
         isMedicationTaken: req.body.isMedicationTaken
       }];
-      
-      // Remove old format fields
-      delete healthData.dosage;
-      delete healthData.quantity;
-      delete healthData.medicationTime;
-      delete healthData.isMedicationTaken;
     }
 
     const healthRecord = new HealthRecord(healthData);
@@ -36,6 +32,7 @@ router.post('/residents/:residentId/health', protect, async (req, res) => {
     
     res.status(201).json({ healthRecord });
   } catch (error) {
+    console.error('Health Record Creation Error:', error);
     res.status(400).json({ message: error.message });
   }
 });
