@@ -3,7 +3,6 @@ import {
   Mail,
   Phone,
   MapPin,
-  Shield,
   Camera,
   Edit,
   Key,
@@ -344,7 +343,7 @@ const ViewProfile = () => {
           <div className="col-span-12 lg:col-span-7">
             <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 shadow-lg border border-white/20 h-full">
               <h3 className="text-xl font-semibold text-gray-900 mb-6">
-                Security Settings
+                Security Setting
               </h3>
               <div className="space-y-6">
                 <button
@@ -358,23 +357,6 @@ const ViewProfile = () => {
                     <div className="text-left">
                       <h4 className="font-medium text-gray-900">Password</h4>
                       <p className="text-gray-500">Change your password</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-6 w-6 text-gray-400" />
-                </button>
-
-                <button className="w-full flex items-center justify-between p-6 rounded-xl hover:bg-gray-50 transition-colors border border-gray-100">
-                  <div className="flex items-center gap-5">
-                    <div className="h-12 w-12 bg-cyan-50 rounded-xl flex items-center justify-center">
-                      <Shield className="h-6 w-6 text-cyan-500" />
-                    </div>
-                    <div className="text-left">
-                      <h4 className="font-medium text-gray-900">
-                        Two-Factor Authentication
-                      </h4>
-                      <p className="text-gray-500">
-                        Add extra security to your account
-                      </p>
                     </div>
                   </div>
                   <ChevronRight className="h-6 w-6 text-gray-400" />

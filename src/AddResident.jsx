@@ -32,10 +32,41 @@ const AddResident = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
+  const formatPhoneNumber = (value) => {
+    // Remove all non-digit characters
+    const phoneNumber = value.replace(/\D/g, "");
+
+    // If the input is empty, return empty string
+    if (!phoneNumber) return "";
+
+    // Add +63 prefix if not already present
+    if (!value.startsWith("+63")) {
+      return `+63${phoneNumber}`;
+    }
+
+    return value;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
+
+    // Add phone number validation
+    const phonePattern = /^\+63[0-9]{10}$/;
+    if (!phonePattern.test(formData.contactNumber)) {
+      setError("Invalid contact number format. Please use: +63 XXX XXX XXXX");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!phonePattern.test(formData.emergencyContactPhone)) {
+      setError(
+        "Invalid emergency contact phone format. Please use: +63 XXX XXX XXXX"
+      );
+      setIsSubmitting(false);
+      return;
+    }
 
     // Basic validation
     const requiredFields = [
@@ -86,10 +117,19 @@ const AddResident = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    // Handle phone number formatting
+    if (name === "contactNumber" || name === "emergencyContactPhone") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: formatPhoneNumber(value),
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const steps = [
@@ -218,8 +258,8 @@ const AddResident = () => {
                         className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
                       >
                         <option value="">Select gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
                       </select>
                     </div>
                   </div>
@@ -237,9 +277,14 @@ const AddResident = () => {
                         value={formData.contactNumber}
                         onChange={handleInputChange}
                         className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter contact number"
+                        placeholder="+63 XXX XXX XXXX"
+                        pattern="\+63[0-9]{10}"
+                        maxLength="13"
                       />
                     </div>
+                    <span className="text-xs text-gray-500 mt-1">
+                      Format: +63 XXX XXX XXXX
+                    </span>
                   </div>
 
                   {/* Address */}
@@ -312,6 +357,7 @@ const AddResident = () => {
                     </div>
                   </div>
 
+                  {/* Emergency Contact Phone */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Emergency Contact Phone
@@ -324,9 +370,14 @@ const AddResident = () => {
                         value={formData.emergencyContactPhone}
                         onChange={handleInputChange}
                         className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter emergency contact phone"
+                        placeholder="+63 XXX XXX XXXX"
+                        pattern="\+63[0-9]{10}"
+                        maxLength="13"
                       />
                     </div>
+                    <span className="text-xs text-gray-500 mt-1">
+                      Format: +63 XXX XXX XXXX
+                    </span>
                   </div>
 
                   <div>

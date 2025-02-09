@@ -19,6 +19,7 @@ import {
   Phone,
   Mail,
   Calendar,
+  PhoneCall,
 } from "lucide-react";
 import Sidebar from "./SideBar";
 import HealthUpdateModal from "./HealthUpdateModal";
@@ -708,7 +709,7 @@ const ResidentDetails = () => {
                     <div className="border border-gray-200 rounded-lg p-6">
                       <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 bg-purple-50 rounded-lg">
-                          <MapPin className="h-5 w-5 text-cyan-500" />
+                          <PhoneCall className="h-5 w-5 text-cyan-500" />
                         </div>
                         <h2 className="text-lg font-semibold text-gray-900">
                           Contact Information
@@ -720,9 +721,12 @@ const ResidentDetails = () => {
                             <p className="text-sm text-gray-500 mb-1">
                               Address
                             </p>
-                            <p className="font-medium text-gray-900">
-                              {residentData.basicInfo.address}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-gray-400" />
+                              <p className="font-medium text-gray-900">
+                                {residentData.basicInfo.address}
+                              </p>
+                            </div>
                           </div>
                           <div>
                             <p className="text-sm text-gray-500 mb-1">Phone</p>
@@ -733,15 +737,7 @@ const ResidentDetails = () => {
                               </p>
                             </div>
                           </div>
-                          <div>
-                            <p className="text-sm text-gray-500 mb-1">Email</p>
-                            <div className="flex items-center gap-2">
-                              <Mail className="h-4 w-4 text-gray-400" />
-                              <p className="font-medium text-gray-900">
-                                {residentData.basicInfo.email}
-                              </p>
-                            </div>
-                          </div>
+                          <div></div>
                         </div>
                       </div>
                     </div>

@@ -270,7 +270,7 @@ const Messages = () => {
 
       <div className="ml-72 flex h-screen">
         {/* Chat List Sidebar */}
-        <div className="w-96 border-r border-gray-200 bg-white/80 backdrop-blur-xl">
+        <div className="w-97 border-r border-gray-200 bg-white/80 backdrop-blur-xl">
           {/* Header */}
           <div className="p-6 border-b border-gray-200">
             <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent mb-4">
@@ -293,6 +293,7 @@ const Messages = () => {
             <div className="flex gap-2 p-1 bg-gray-100/50 rounded-xl">
               {[
                 { id: "all", label: "All" },
+                { id: "Admin", label: "Admins" },
                 { id: "Nurse", label: "Nurses" },
                 { id: "Nutritionist", label: "Nutritionists" },
                 { id: "Relative", label: "Relatives" },

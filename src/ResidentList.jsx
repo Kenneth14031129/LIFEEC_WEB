@@ -7,8 +7,6 @@ import {
   Printer,
   Share2,
   MapPin,
-  Cake,
-  Heart,
   ArrowUpRight,
   User,
   Mail,
@@ -183,7 +181,6 @@ const ResidentList = () => {
                 <option value="all">All</option>
                 <option value="male">Male</option>
                 <option value="female">Female</option>
-                <option value="other">Other</option>
               </select>
             </div>
           </div>
@@ -290,25 +287,27 @@ const ResidentList = () => {
 
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="p-3 bg-gray-50/50 rounded-xl">
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-                    <Cake className="h-4 w-4" />
+                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 mb-1">
                     Date of Birth
                   </div>
-                  <p className="font-semibold text-sm">
-                    {resident.basicInfo.dateOfBirth}
-                  </p>
+                  <div className="text-gray-600">
+                    <span>{resident.basicInfo.dateOfBirth}</span>
+                  </div>
                 </div>
                 <div className="p-3 bg-gray-50/50 rounded-xl">
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-                    <Heart className="h-4 w-4" />
+                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 mb-1">
                     Gender
                   </div>
-                  <p className="font-semibold">{resident.basicInfo.gender}</p>
+                  <div className="text-gray-600">
+                    <span>{resident.basicInfo.gender}</span>
+                  </div>
                 </div>
               </div>
 
               <div className="space-y-3 mb-6 p-4 bg-gray-50/50 rounded-xl">
-                <h4 className="font-medium text-gray-700">Emergency Contact</h4>
+                <h4 className="font-semibold text-gray-900">
+                  Emergency Contact
+                </h4>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <User className="h-4 w-4" />
                   <span>

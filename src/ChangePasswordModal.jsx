@@ -114,9 +114,9 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
                   className="absolute inset-y-0 right-0 px-3 flex items-center"
                 >
                   {showPasswords.currentPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
-                  ) : (
                     <Eye className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <EyeOff className="h-5 w-5 text-gray-400" />
                   )}
                 </button>
               </div>
@@ -146,9 +146,9 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
                   className="absolute inset-y-0 right-0 px-3 flex items-center"
                 >
                   {showPasswords.newPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
-                  ) : (
                     <Eye className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <EyeOff className="h-5 w-5 text-gray-400" />
                   )}
                 </button>
               </div>
@@ -181,9 +181,9 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
                   className="absolute inset-y-0 right-0 px-3 flex items-center"
                 >
                   {showPasswords.confirmNewPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
-                  ) : (
                     <Eye className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <EyeOff className="h-5 w-5 text-gray-400" />
                   )}
                 </button>
               </div>

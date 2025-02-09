@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { Bell, Users, AlertTriangle, Search } from "lucide-react";
+import { Bell, Users, AlertTriangle, Search, ChevronRight } from "lucide-react";
 import Sidebar from "./SideBar";
 import {
   getResidents,
@@ -29,6 +29,32 @@ const Dashboard = () => {
   const [allAlerts, setAllAlerts] = useState([]);
   const [totalResidents, setTotalResidents] = useState([0]);
   const [monthlyStats, setMonthlyStats] = useState([]);
+  const [userData, setUserData] = useState({
+    fullName: "",
+    userType: "",
+  });
+
+  useEffect(() => {
+    const loadUserData = () => {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        setUserData({
+          fullName: parsedUser.fullName || "Unknown User",
+          // Capitalize first letter of userType
+          userType: parsedUser.userType
+            ? parsedUser.userType.charAt(0).toUpperCase() +
+              parsedUser.userType.slice(1)
+            : "Unknown Role",
+        });
+      } else {
+        // If no user data found, redirect to login
+        navigate("/");
+      }
+    };
+
+    loadUserData();
+  }, [navigate]);
 
   const processMonthlyStats = (alerts) => {
     const months = {
@@ -192,7 +218,7 @@ const Dashboard = () => {
               />
             </div>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
             {/* Notification Bell with Dropdown */}
             <div className="relative notifications-container">
               <button
@@ -201,7 +227,7 @@ const Dashboard = () => {
               >
                 <Bell className="h-6 w-6" />
                 {notifications.filter((n) => !n.read).length > 0 && (
-                  <span className="absolute top-0 right-0 h-5 w-5 bg-gradient-to-r from-red-500 to-pink-500 rounded-full text-white text-xs flex items-center justify-center border-2 border-white">
+                  <span className="absolute top-0 right-10 h-5 w-5 bg-gradient-to-r from-red-500 to-pink-500 rounded-full text-white text-xs flex items-center justify-center border-2 border-white">
                     {notifications.filter((n) => !n.read).length}
                   </span>
                 )}
@@ -264,29 +290,34 @@ const Dashboard = () => {
                       ))
                     )}
                   </div>
-
-                  <div className="p-4 border-t border-gray-100">
-                    <button
-                      onClick={() => navigate("/notifications")}
-                      className="w-full px-4 py-2 text-sm text-center text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
-                    >
-                      View all notifications
-                    </button>
-                  </div>
                 </div>
               )}
             </div>
 
             <button
               onClick={() => navigate("/view-profile")}
-              className="flex items-center gap-3 p-1 rounded-lg hover:bg-white/80 transition-colors"
+              className="group flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/90 transition-all duration-200 border border-transparent hover:border-gray-100"
             >
-              <div className="h-10 w-10 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold">A</span>
+              <div className="relative">
+                <div className="h-10 w-10 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center transform group-hover:scale-105 transition-transform duration-200">
+                  <span className="text-white font-bold">
+                    {userData.fullName ? userData.fullName.charAt(0) : "U"}
+                  </span>
+                </div>
+                {/* Online indicator */}
+                <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 rounded-full border-2 border-white" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-700">Admin User</p>
-                <p className="text-xs text-gray-500">Administrator</p>
+
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-left">
+                  <p className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
+                    {userData.fullName}
+                  </p>
+                  <p className="text-xs text-gray-500 group-hover:text-gray-600 transition-colors">
+                    {userData.userType}
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-gray-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200" />
               </div>
             </button>
           </div>
