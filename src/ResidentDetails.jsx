@@ -681,24 +681,26 @@ const ResidentDetails = () => {
                       <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-sm text-gray-500 mb-1">
+                            <p className="text-sm font-semibold text-gray-900 mb-1">
                               Full Name
                             </p>
-                            <p className="font-medium text-gray-900">
+                            <p className="text-gray-600">
                               {residentData.basicInfo.name}
                             </p>
                           </div>
                           <div>
-                            <p className="text-sm text-gray-500 mb-1">
+                            <p className="text-sm font-semibold text-gray-900 mb-1">
                               Date of Birth
                             </p>
-                            <p className="font-medium text-gray-900">
+                            <p className=" text-gray-600">
                               {residentData.basicInfo.dateOfBirth}
                             </p>
                           </div>
                           <div>
-                            <p className="text-sm text-gray-500 mb-1">Gender</p>
-                            <p className="font-medium text-gray-900">
+                            <p className="text-sm font-semibold text-gray-900 mb-1">
+                              Gender
+                            </p>
+                            <p className="text-gray-600">
                               {residentData.basicInfo.gender}
                             </p>
                           </div>
@@ -718,21 +720,23 @@ const ResidentDetails = () => {
                       <div className="space-y-4">
                         <div className="grid grid-cols-1 gap-4">
                           <div>
-                            <p className="text-sm text-gray-500 mb-1">
+                            <p className="text-sm font-semibold text-gray-900 mb-1">
                               Address
                             </p>
                             <div className="flex items-center gap-2">
-                              <MapPin className="h-4 w-4 text-gray-400" />
-                              <p className="font-medium text-gray-900">
+                              <MapPin className="h-4 w-4 text-gray-600" />
+                              <p className="text-gray-600">
                                 {residentData.basicInfo.address}
                               </p>
                             </div>
                           </div>
                           <div>
-                            <p className="text-sm text-gray-500 mb-1">Phone</p>
+                            <p className="text-sm font-semibold text-gray-900 mb-1">
+                              Phone
+                            </p>
                             <div className="flex items-center gap-2">
-                              <Phone className="h-4 w-4 text-gray-400" />
-                              <p className="font-medium text-gray-900">
+                              <Phone className="h-4 w-4 text-gray-600" />
+                              <p className="text-gray-600">
                                 {residentData.basicInfo.contact}
                               </p>
                             </div>
@@ -757,18 +761,20 @@ const ResidentDetails = () => {
                       <div className="p-4 bg-red-50/50 rounded-lg">
                         <div className="space-y-4">
                           <div>
-                            <p className="text-sm text-gray-500 mb-1">Name</p>
+                            <p className="text-sm font-semibold text-gray-900 mb-1">
+                              Name
+                            </p>
                             <div className="flex items-center gap-2">
-                              <p className="font-medium text-gray-900">
+                              <p className="text-gray-600">
                                 {residentData.emergencyContact.name}
                               </p>
                             </div>
                           </div>
                           <div>
-                            <p className="text-sm text-gray-500 mb-1">
+                            <p className="text-sm font-semibold text-gray-900 mb-1">
                               Relationship
                             </p>
-                            <p className="font-medium text-gray-900">
+                            <p className="text-gray-600">
                               {residentData.emergencyContact.relation}
                             </p>
                           </div>
@@ -777,19 +783,23 @@ const ResidentDetails = () => {
                       <div className="p-4 bg-red-50/50 rounded-lg">
                         <div className="space-y-4">
                           <div>
-                            <p className="text-sm text-gray-500 mb-1">Phone</p>
+                            <p className="text-sm font-semibold text-gray-900 mb-1">
+                              Phone
+                            </p>
                             <div className="flex items-center gap-2">
-                              <Phone className="h-4 w-4 text-gray-400" />
-                              <p className="font-medium text-gray-900">
+                              <Phone className="h-4 w-4 text-gray-600" />
+                              <p className="text-gray-600">
                                 {residentData.emergencyContact.phone}
                               </p>
                             </div>
                           </div>
                           <div>
-                            <p className="text-sm text-gray-500 mb-1">Email</p>
+                            <p className="text-sm font-semibold text-gray-900 mb-1">
+                              Email
+                            </p>
                             <div className="flex items-center gap-2">
-                              <Mail className="h-4 w-4 text-gray-400" />
-                              <p className="font-medium text-gray-900">
+                              <Mail className="h-4 w-4 text-gray-600" />
+                              <p className="text-gray-600">
                                 {residentData.emergencyContact.email}
                               </p>
                             </div>
