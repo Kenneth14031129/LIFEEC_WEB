@@ -647,9 +647,19 @@ const ResidentDetails = () => {
         </div>
 
         {/* Content Area */}
-        <div className="grid grid-cols-12 gap-6">
+        <div
+          className={`grid grid-cols-12 gap-6 ${
+            activeTab === "overview" ? "" : ""
+          }`}
+        >
           {/* Main Content */}
-          <div className="col-span-12 lg:col-span-8 space-y-6">
+          <div
+            className={`${
+              activeTab === "overview"
+                ? "col-span-12"
+                : "col-span-12 lg:col-span-8"
+            } space-y-6`}
+          >
             {activeTab === "overview" && (
               <div className="space-y-6 font-[Poppins]">
                 <div className="bg-white rounded-xl p-8 shadow-lg">
@@ -841,8 +851,10 @@ const ResidentDetails = () => {
                       </div>
                       <div className="flex flex-col items-end">
                         <div className="flex items-center gap-2">
-                          <span className="text-gray-500">Date:</span>
-                          <span className="font-medium">
+                          <span className="font-semibold text-gray-900">
+                            Date:
+                          </span>
+                          <span className="text-gray-600">
                             {residentData.health.date || "Not specified"}
                           </span>
                         </div>
@@ -869,7 +881,7 @@ const ResidentDetails = () => {
                                 className="flex items-center gap-3 p-3 bg-red-50/50 rounded-lg"
                               >
                                 <div className="h-2 w-2 bg-red-500 rounded-full"></div>
-                                <span className="text-gray-900">{allergy}</span>
+                                <span className="text-gray-600">{allergy}</span>
                               </div>
                             )
                           )}
@@ -894,7 +906,7 @@ const ResidentDetails = () => {
                                 className="flex items-center gap-3 p-3 bg-cyan-50/50 rounded-lg"
                               >
                                 <div className="h-2 w-2 bg-cyan-500 rounded-full"></div>
-                                <span className="text-gray-900">
+                                <span className="text-gray-600">
                                   {condition}
                                 </span>
                               </div>
@@ -922,42 +934,38 @@ const ResidentDetails = () => {
                           >
                             <div className="grid grid-cols-4 gap-4">
                               <div>
-                                <p className="text-sm text-gray-500 mb-1">
+                                <p className="text-sm font-semibold text-gray-900 mb-1">
                                   Medication
                                 </p>
-                                <p className="font-medium text-gray-900">
-                                  {med.name}
-                                </p>
+                                <p className="text-gray-600">{med.name}</p>
                               </div>
                               <div>
-                                <p className="text-sm text-gray-500 mb-1">
+                                <p className="text-sm font-semibold text-gray-900 mb-1">
                                   Dosage
                                 </p>
-                                <p className="font-medium text-gray-900">
-                                  {med.dosage}
-                                </p>
+                                <p className="text-gray-600">{med.dosage}</p>
                               </div>
                               <div>
-                                <p className="text-sm text-gray-500 mb-1">
+                                <p className="text-sm font-semibold text-gray-900 mb-1">
                                   Quantity
                                 </p>
-                                <p className="font-medium text-gray-900">
+                                <p className="text-gray-600">
                                   {med.quantity || "Not specified"}
                                 </p>
                               </div>
                               <div>
-                                <p className="text-sm text-gray-500 mb-1">
+                                <p className="text-sm font-semibold text-gray-900 mb-1">
                                   Time
                                 </p>
                                 <div className="flex items-center gap-2">
                                   <Clock className="h-4 w-4 text-gray-400" />
-                                  <span className="font-medium text-gray-900">
+                                  <span className="text-gray-600">
                                     {formatTime(med.time)}
                                   </span>
                                 </div>
                               </div>
                               <div className="col-span-4">
-                                <p className="text-sm text-gray-500 mb-1">
+                                <p className="text-sm font-semibold text-gray-900 mb-1">
                                   Status
                                 </p>
                                 <div className="flex items-center gap-2">
@@ -968,7 +976,9 @@ const ResidentDetails = () => {
                                     className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
                                   />
                                   <span className="text-sm text-gray-700">
-                                    Medication has been taken
+                                    {med.status === "Taken"
+                                      ? "Medication taken"
+                                      : "Not taken"}
                                   </span>
                                 </div>
                               </div>
@@ -990,22 +1000,22 @@ const ResidentDetails = () => {
                       </div>
                       <div className="space-y-4">
                         <div>
-                          <h3 className="text-sm font-medium text-gray-700 mb-2">
+                          <h3 className="text-sm font-semibold text-gray-900 mb-2">
                             Assessment Notes
                           </h3>
                           <div className="p-4 bg-gray-50/80 rounded-lg border border-gray-100">
-                            <p className="text-gray-900">
+                            <p className="text-gray-600">
                               {residentData.health.assessmentNotes ||
                                 "No assessment notes available."}
                             </p>
                           </div>
                         </div>
                         <div>
-                          <h3 className="text-sm font-medium text-gray-700 mb-2">
+                          <h3 className="text-sm font-semibold text-gray-900 mb-2">
                             Instructions
                           </h3>
                           <div className="p-4 bg-gray-50/80 rounded-lg border border-gray-100">
-                            <p className="text-gray-900">
+                            <p className="text-gray-600">
                               {residentData.health.instructions ||
                                 "No instructions available."}
                             </p>
