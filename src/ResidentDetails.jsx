@@ -242,7 +242,16 @@ const ResidentDetails = () => {
           lastUpdated: formatLastUpdated(
             latestHealthRecord?.createdAt || resident.updatedAt
           ),
-          medications: latestHealthRecord
+          // Update this part to handle multiple medications
+          medications: latestHealthRecord?.allMedications
+            ? latestHealthRecord.allMedications.map((med) => ({
+                name: med.name,
+                dosage: med.dosage,
+                quantity: med.quantity || "",
+                time: med.medicationTime,
+                status: med.isMedicationTaken ? "Taken" : "Pending",
+              }))
+            : latestHealthRecord
             ? [
                 {
                   name: latestHealthRecord.medications,
@@ -254,7 +263,7 @@ const ResidentDetails = () => {
                     : "Pending",
                 },
               ]
-            : resident.medications || [],
+            : [],
           conditions: latestHealthRecord
             ? [latestHealthRecord.medicalCondition]
             : resident.conditions || [],
@@ -303,7 +312,7 @@ const ResidentDetails = () => {
       let response;
 
       if (isAddingNew) {
-        // Create new record
+        // Create new record with medications array
         response = await createHealthRecord(id, newHealthRecord);
         toast.success("Health record added successfully");
 
@@ -347,15 +356,13 @@ const ResidentDetails = () => {
           status: newHealthRecord.status,
           date: newHealthRecord.date,
           lastUpdated: "Just now",
-          medications: [
-            {
-              name: newHealthRecord.medications,
-              dosage: newHealthRecord.dosage,
-              quantity: newHealthRecord.quantity,
-              time: newHealthRecord.medicationTime,
-              status: newHealthRecord.isMedicationTaken ? "Taken" : "Pending",
-            },
-          ],
+          medications: newHealthRecord.medications.map((med) => ({
+            name: med.name,
+            dosage: med.dosage,
+            quantity: med.quantity,
+            time: med.medicationTime,
+            status: med.isMedicationTaken ? "Taken" : "Pending",
+          })),
           conditions: [newHealthRecord.medicalCondition],
           allergies: [newHealthRecord.allergies],
           assessmentNotes: newHealthRecord.assessment,
@@ -918,68 +925,93 @@ const ResidentDetails = () => {
 
                     {/* Medication Details */}
                     <div className="border border-gray-200 rounded-lg p-6 mb-6">
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="p-2 bg-blue-50 rounded-lg">
-                          <Pill className="h-5 w-5 text-cyan-500" />
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-blue-50 rounded-lg">
+                            <Pill className="h-5 w-5 text-cyan-500" />
+                          </div>
+                          <h2 className="text-lg font-semibold text-gray-900">
+                            Medication Details
+                          </h2>
                         </div>
-                        <h2 className="text-lg font-semibold text-gray-900">
-                          Medication Details
-                        </h2>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-500">
+                            Total Medications:{" "}
+                            {residentData.health.medications.length}
+                          </span>
+                        </div>
                       </div>
-                      <div className="space-y-4">
+
+                      <div className="grid grid-cols-1 gap-6">
                         {residentData.health.medications.map((med, index) => (
                           <div
                             key={index}
-                            className="p-4 bg-gray-50/80 rounded-lg border border-gray-100"
+                            className="bg-white rounded-xl border border-gray-100 overflow-hidden"
                           >
-                            <div className="grid grid-cols-4 gap-4">
-                              <div>
-                                <p className="text-sm font-semibold text-gray-900 mb-1">
-                                  Medication
-                                </p>
-                                <p className="text-gray-600">{med.name}</p>
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold text-gray-900 mb-1">
-                                  Dosage
-                                </p>
-                                <p className="text-gray-600">{med.dosage}</p>
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold text-gray-900 mb-1">
-                                  Quantity
-                                </p>
-                                <p className="text-gray-600">
-                                  {med.quantity || "Not specified"}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold text-gray-900 mb-1">
-                                  Time
-                                </p>
+                            {/* Medication Header */}
+                            <div className="bg-gradient-to-r from-cyan-50 to-blue-50 px-6 py-4 border-b border-gray-100">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                    <Pill className="h-5 w-5 text-cyan-500" />
+                                  </div>
+                                  <div>
+                                    <h3 className="font-medium text-gray-900">
+                                      {med.name || "No medication name"}
+                                    </h3>
+                                    <p className="text-sm text-gray-500">
+                                      Medication {index + 1}
+                                    </p>
+                                  </div>
+                                </div>
                                 <div className="flex items-center gap-2">
-                                  <Clock className="h-4 w-4 text-gray-400" />
-                                  <span className="text-gray-600">
-                                    {formatTime(med.time)}
+                                  <span
+                                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                      med.status === "Taken"
+                                        ? "bg-green-50 text-green-600"
+                                        : "bg-yellow-50 text-yellow-600"
+                                    }`}
+                                  >
+                                    {med.status}
                                   </span>
                                 </div>
                               </div>
-                              <div className="col-span-4">
-                                <p className="text-sm font-semibold text-gray-900 mb-1">
-                                  Status
-                                </p>
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="checkbox"
-                                    checked={med.status === "Taken"}
-                                    readOnly
-                                    className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
-                                  />
-                                  <span className="text-sm text-gray-700">
-                                    {med.status === "Taken"
-                                      ? "Medication taken"
-                                      : "Not taken"}
-                                  </span>
+                            </div>
+
+                            {/* Medication Details Grid */}
+                            <div className="p-6">
+                              <div className="grid grid-cols-3 gap-6">
+                                <div className="space-y-2">
+                                  <p className="text-sm font-medium text-gray-500">
+                                    Dosage
+                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-gray-900">
+                                      {med.dosage || "Not specified"}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <p className="text-sm font-medium text-gray-500">
+                                    Quantity
+                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-gray-900">
+                                      {med.quantity || "Not specified"}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <p className="text-sm font-medium text-gray-500">
+                                    Time
+                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-gray-900">
+                                      {formatTime(med.time)}
+                                    </p>
+                                  </div>
                                 </div>
                               </div>
                             </div>

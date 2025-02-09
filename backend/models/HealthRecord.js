@@ -1,6 +1,20 @@
 // models/HealthRecord.js
 import mongoose from 'mongoose';
 
+const medicationSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  dosage: String,
+  quantity: String,
+  medicationTime: String,
+  isMedicationTaken: {
+    type: Boolean,
+    default: false
+  }
+});
+
 const healthRecordSchema = new mongoose.Schema({
   residentId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -13,15 +27,12 @@ const healthRecordSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    required: true
+    required: true,
+    enum: ['Stable', 'Critical']
   },
   allergies: String,
   medicalCondition: String,
-  medications: String,
-  dosage: String,
-  quantity: String,
-  medicationTime: String,
-  isMedicationTaken: Boolean,
+  medications: [medicationSchema],
   assessment: String,
   instructions: String,
   createdAt: {

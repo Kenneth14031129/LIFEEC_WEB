@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, Plus, Trash2 } from "lucide-react";
 import PropTypes from "prop-types";
 
 const HealthUpdateModal = ({
@@ -14,11 +14,15 @@ const HealthUpdateModal = ({
     status: "Stable",
     allergies: "",
     medicalCondition: "",
-    medications: "",
-    dosage: "",
-    quantity: "",
-    medicationTime: "",
-    isMedicationTaken: false,
+    medications: [
+      {
+        name: "",
+        dosage: "",
+        quantity: "",
+        medicationTime: "",
+        isMedicationTaken: false,
+      },
+    ],
     assessment: "",
     instructions: "",
   });
@@ -33,28 +37,42 @@ const HealthUpdateModal = ({
           status: "Stable",
           allergies: "",
           medicalCondition: "",
-          medications: "",
-          dosage: "",
-          quantity: "",
-          medicationTime: "",
-          isMedicationTaken: false,
+          medications: [
+            {
+              name: "",
+              dosage: "",
+              quantity: "",
+              medicationTime: "",
+              isMedicationTaken: false,
+            },
+          ],
           assessment: "",
           instructions: "",
         });
       } else if (healthRecords.length > 0) {
-        // Use the latest record when updating
         const latestRecord = healthRecords[0];
+
+        // Check for new or old format
+        const medications = Array.isArray(latestRecord.allMedications)
+          ? latestRecord.allMedications
+          : latestRecord.medications
+          ? [
+              {
+                name: latestRecord.medications,
+                dosage: latestRecord.dosage,
+                quantity: latestRecord.quantity || "",
+                medicationTime: latestRecord.medicationTime || "",
+                isMedicationTaken: latestRecord.isMedicationTaken || false,
+              },
+            ]
+          : [];
 
         setFormData({
           date: latestRecord.date,
           status: latestRecord.status || "Stable",
           allergies: latestRecord.allergies || "",
           medicalCondition: latestRecord.medicalCondition || "",
-          medications: latestRecord.medications || "",
-          dosage: latestRecord.dosage || "",
-          quantity: latestRecord.quantity || "",
-          medicationTime: latestRecord.medicationTime || "",
-          isMedicationTaken: latestRecord.isMedicationTaken || false,
+          medications,
           assessment: latestRecord.assessment || "",
           instructions: latestRecord.instructions || "",
         });
@@ -62,8 +80,44 @@ const HealthUpdateModal = ({
     }
   }, [isOpen, isAddingNew, healthRecords]);
 
+  const handleAddMedication = () => {
+    setFormData({
+      ...formData,
+      medications: [
+        ...formData.medications,
+        {
+          name: "",
+          dosage: "",
+          quantity: "",
+          medicationTime: "",
+          isMedicationTaken: false,
+        },
+      ],
+    });
+  };
+
+  const handleRemoveMedication = (index) => {
+    setFormData({
+      ...formData,
+      medications: formData.medications.filter((_, i) => i !== index),
+    });
+  };
+
+  const handleMedicationChange = (index, field, value) => {
+    const updatedMedications = [...formData.medications];
+    updatedMedications[index] = {
+      ...updatedMedications[index],
+      [field]: value,
+    };
+    setFormData({
+      ...formData,
+      medications: updatedMedications,
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Submit the full form data with medications array
     onSubmit(formData);
     onClose();
   };
@@ -121,7 +175,6 @@ const HealthUpdateModal = ({
             </div>
           </div>
 
-          {/* Rest of the form remains the same */}
           {/* Allergies and Medical Condition */}
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -160,91 +213,131 @@ const HealthUpdateModal = ({
 
           {/* Medication Details */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900">
-              Medication Details
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Medications
-                </label>
-                <input
-                  type="text"
-                  value={formData.medications}
-                  onChange={(e) =>
-                    setFormData({ ...formData, medications: e.target.value })
-                  }
-                  className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Enter medication name"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Dosage
-                </label>
-                <input
-                  type="text"
-                  value={formData.dosage}
-                  onChange={(e) =>
-                    setFormData({ ...formData, dosage: e.target.value })
-                  }
-                  className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Enter dosage"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Quantity
-                </label>
-                <input
-                  type="number"
-                  value={formData.quantity}
-                  onChange={(e) =>
-                    setFormData({ ...formData, quantity: e.target.value })
-                  }
-                  className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Enter quantity"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Medication Time
-                </label>
-                <input
-                  type="time"
-                  value={formData.medicationTime}
-                  onChange={(e) => {
-                    const time = e.target.value;
-                    setFormData({ ...formData, medicationTime: time });
-                  }}
-                  className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="medicationTaken"
-                checked={formData.isMedicationTaken}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    isMedicationTaken: e.target.checked,
-                  })
-                }
-                className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
-              />
-              <label
-                htmlFor="medicationTaken"
-                className="text-sm text-gray-700"
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium text-gray-900">
+                Medication Details
+              </h3>
+              <button
+                type="button"
+                onClick={handleAddMedication}
+                className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
               >
-                {formData.isMedicationTaken ? "Medication taken" : "Not taken"}
-              </label>
+                <Plus className="h-4 w-4" />
+                Add Medication
+              </button>
             </div>
+
+            {formData.medications.map((medication, index) => (
+              <div key={index} className="p-4 bg-gray-50 rounded-lg space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-gray-900">
+                    Medication {index + 1}
+                  </h4>
+                  {index > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveMedication(index)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Medication Name
+                    </label>
+                    <input
+                      type="text"
+                      value={medication.name}
+                      onChange={(e) =>
+                        handleMedicationChange(index, "name", e.target.value)
+                      }
+                      className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="Enter medication name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Dosage
+                    </label>
+                    <input
+                      type="text"
+                      value={medication.dosage}
+                      onChange={(e) =>
+                        handleMedicationChange(index, "dosage", e.target.value)
+                      }
+                      className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="Enter dosage"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Quantity
+                    </label>
+                    <input
+                      type="number"
+                      value={medication.quantity}
+                      onChange={(e) =>
+                        handleMedicationChange(
+                          index,
+                          "quantity",
+                          e.target.value
+                        )
+                      }
+                      className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="Enter quantity"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Medication Time
+                    </label>
+                    <input
+                      type="time"
+                      value={medication.medicationTime}
+                      onChange={(e) =>
+                        handleMedicationChange(
+                          index,
+                          "medicationTime",
+                          e.target.value
+                        )
+                      }
+                      className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id={`medicationTaken${index}`}
+                    checked={medication.isMedicationTaken}
+                    onChange={(e) =>
+                      handleMedicationChange(
+                        index,
+                        "isMedicationTaken",
+                        e.target.checked
+                      )
+                    }
+                    className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                  />
+                  <label
+                    htmlFor={`medicationTaken${index}`}
+                    className="text-sm text-gray-700"
+                  >
+                    {medication.isMedicationTaken
+                      ? "Medication taken"
+                      : "Not taken"}
+                  </label>
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* Assessment and Instructions */}
@@ -313,15 +406,38 @@ HealthUpdateModal.propTypes = {
       status: PropTypes.string,
       allergies: PropTypes.string,
       medicalCondition: PropTypes.string,
-      medications: PropTypes.string,
+      // Support both old and new format
+      medications: PropTypes.oneOfType([
+        PropTypes.string, // Old format: single medication name
+        PropTypes.arrayOf(
+          // New format: array of medication objects
+          PropTypes.shape({
+            name: PropTypes.string,
+            dosage: PropTypes.string,
+            quantity: PropTypes.string,
+            medicationTime: PropTypes.string,
+            isMedicationTaken: PropTypes.bool,
+          })
+        ),
+      ]),
+      // Old format fields
       dosage: PropTypes.string,
       quantity: PropTypes.string,
       medicationTime: PropTypes.string,
       isMedicationTaken: PropTypes.bool,
+      // New format field
+      allMedications: PropTypes.arrayOf(
+        PropTypes.shape({
+          name: PropTypes.string,
+          dosage: PropTypes.string,
+          quantity: PropTypes.string,
+          medicationTime: PropTypes.string,
+          isMedicationTaken: PropTypes.bool,
+        })
+      ),
       assessment: PropTypes.string,
       instructions: PropTypes.string,
     })
   ),
 };
-
 export default HealthUpdateModal;
