@@ -103,31 +103,35 @@ const ActivitiesReviewModal = ({ isOpen, onClose, activities }) => {
                 <div className="bg-blue-50/30 rounded-lg p-4 mb-6">
                   <div className="flex items-center gap-2 mb-3">
                     <Activity className="h-5 w-5 text-blue-500" />
-                    <h3 className="font-medium text-gray-900">
+                    <h3 className="font-semibold text-gray-900">
                       Activity Details
                     </h3>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <p className="text-sm text-gray-500 mb-1">Name</p>
-                      <p className="font-medium text-gray-900">
-                        {activity.name}
+                      <p className="text-sm font-semibold text-gray-900 mb-1">
+                        Name
                       </p>
+                      <p className="text-gray-600">{activity.name}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 mb-1">Location</p>
+                      <p className="text-sm font-semibold text-gray-900 mb-1">
+                        Location
+                      </p>
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-gray-400" />
-                        <p className="font-medium text-gray-900">
+                        <p className="text-gray-600">
                           {activity.location || "Not specified"}
                         </p>
                       </div>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 mb-1">Duration</p>
+                      <p className="text-sm font-semibold text-gray-900 mb-1">
+                        Duration
+                      </p>
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-gray-400" />
-                        <p className="font-medium text-gray-900">
+                        <p className="text-gray-600">
                           {activity.duration
                             ? `${activity.duration} minutes`
                             : "Not specified"}
@@ -143,11 +147,11 @@ const ActivitiesReviewModal = ({ isOpen, onClose, activities }) => {
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <Activity className="h-5 w-5 text-gray-500" />
-                        <h3 className="font-medium text-gray-900">
+                        <h3 className="font-semibold text-gray-900">
                           Description
                         </h3>
                       </div>
-                      <p className="text-gray-700">{activity.description}</p>
+                      <p className="text-gray-600">{activity.description}</p>
                     </div>
                   )}
 
@@ -155,9 +159,9 @@ const ActivitiesReviewModal = ({ isOpen, onClose, activities }) => {
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <Activity className="h-5 w-5 text-gray-500" />
-                        <h3 className="font-medium text-gray-900">Notes</h3>
+                        <h3 className="font-semibold text-gray-900">Notes</h3>
                       </div>
-                      <p className="text-gray-700">{activity.notes}</p>
+                      <p className="text-gray-600">{activity.notes}</p>
                     </div>
                   )}
                 </div>

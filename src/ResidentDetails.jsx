@@ -14,7 +14,6 @@ import {
   FileText,
   Phone,
   Mail,
-  Calendar,
   PhoneCall,
   ChevronLeft,
 } from "lucide-react";
@@ -39,6 +38,7 @@ import {
   createActivitiesRecord,
 } from "../services/api";
 import toast from "react-hot-toast";
+import ActivitiesDisplaySection from "./ActivitiesDisplaySection";
 
 const ResidentDetails = () => {
   const { id } = useParams();
@@ -1184,126 +1184,7 @@ const ResidentDetails = () => {
             )}
 
             {activeTab === "activities" && (
-              <div className="space-y-6 font-[Poppins]">
-                {!residentData.activities.length ? (
-                  <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-white/20 text-center">
-                    <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      No Activities Scheduled
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                      Schedule activities for this resident using the quick
-                      actions panel.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {/* Activity List Header */}
-                    <div className="bg-white rounded-xl p-6 shadow-lg">
-                      <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
-                        <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 text-cyan-500">
-                            <Activity className="h-full w-full" />
-                          </div>
-                          <div>
-                            <h1 className="text-2xl font-bold text-gray-900">
-                              Activity Plan
-                            </h1>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end"></div>
-                      </div>
-
-                      {/* Activities List */}
-                      <div className="space-y-4">
-                        {Array.isArray(residentData.activities) &&
-                          residentData.activities.map((activity, index) => (
-                            <div
-                              key={activity._id || index}
-                              className="p-4 bg-gray-50 rounded-xl border border-gray-100"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                  <div className="h-10 w-10 bg-cyan-50 rounded-lg flex items-center justify-center">
-                                    <Activity className="h-5 w-5 text-cyan-500" />
-                                  </div>
-                                  <div>
-                                    <h4 className="font-medium text-gray-900 text-lg">
-                                      {activity.name}
-                                    </h4>
-                                    <div className="flex items-center gap-3 mt-1 text-gray-600">
-                                      <div className="flex items-center gap-2">
-                                        <MapPin className="h-4 w-4" />
-                                        <span className="text-sm">
-                                          {activity.location}
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <Calendar className="h-4 w-4" />
-                                        <span className="text-sm">
-                                          {activity.date}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                  {activity.duration && (
-                                    <div className="flex items-center gap-2 text-gray-600">
-                                      <Clock className="h-4 w-4" />
-                                      <span className="text-sm">
-                                        {activity.duration} mins
-                                      </span>
-                                    </div>
-                                  )}
-                                  <span
-                                    className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                      activity.status === "Completed"
-                                        ? "bg-green-50 text-green-600"
-                                        : activity.status === "Cancelled"
-                                        ? "bg-red-50 text-red-600"
-                                        : activity.status === "In Progress"
-                                        ? "bg-yellow-50 text-yellow-600"
-                                        : "bg-blue-50 text-blue-600"
-                                    }`}
-                                  >
-                                    {activity.status}
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* Optional Description and Notes */}
-                              {(activity.description || activity.notes) && (
-                                <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">
-                                  {activity.description && (
-                                    <div className="mb-2">
-                                      <h5 className="text-sm font-medium text-gray-700 mb-1">
-                                        Description
-                                      </h5>
-                                      <p className="text-gray-600">
-                                        {activity.description}
-                                      </p>
-                                    </div>
-                                  )}
-                                  {activity.notes && (
-                                    <div>
-                                      <h5 className="text-sm font-medium text-gray-700 mb-1">
-                                        Notes
-                                      </h5>
-                                      <p className="text-gray-600">
-                                        {activity.notes}
-                                      </p>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <ActivitiesDisplaySection activities={residentData.activities} />
             )}
           </div>
 

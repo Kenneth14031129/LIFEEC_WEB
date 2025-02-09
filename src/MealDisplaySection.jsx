@@ -47,8 +47,8 @@ const MealDisplaySection = ({ mealData }) => {
         </div>
         <div className="flex flex-col items-end">
           <div className="flex items-center gap-2">
-            <span className="text-gray-500">Date:</span>
-            <span className="font-medium">
+            <span className="font-semibold text-gray-900">Date:</span>
+            <span className="text-gray-600">
               {mealData.date || "Not specified"}
             </span>
           </div>
