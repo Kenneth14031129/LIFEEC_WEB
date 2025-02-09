@@ -13,13 +13,13 @@ import {
   ArrowLeft,
   FileText,
   AlertTriangle,
-  Stethoscope,
   Apple,
   Pizza,
   Phone,
   Mail,
   Calendar,
   PhoneCall,
+  ChevronLeft,
 } from "lucide-react";
 import Sidebar from "./SideBar";
 import HealthUpdateModal from "./HealthUpdateModal";
@@ -97,6 +97,11 @@ const ResidentDetails = () => {
     },
     activities: [],
   });
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 2;
+  const [isMedicalProfileExpanded, setIsMedicalProfileExpanded] =
+    useState(false);
 
   // Modify the button click handlers
   const handleUpdateClick = () => {
@@ -832,44 +837,33 @@ const ResidentDetails = () => {
             {/* Health Tab Content */}
             {activeTab === "health" && (
               <div className="space-y-6 font-[Poppins]">
-                {!residentData.health.conditions.length ? (
-                  <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-white/20 text-center">
-                    <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      No Health Records Added
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                      Add health information using the quick actions panel.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="bg-white rounded-xl p-8 shadow-lg">
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
+                {/* Allergies and Medical Conditions Section */}
+                <div className="bg-white rounded-xl p-8 shadow-lg">
+                  <button
+                    onClick={() =>
+                      setIsMedicalProfileExpanded(!isMedicalProfileExpanded)
+                    }
+                    className="w-full"
+                  >
+                    <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 text-cyan-500">
-                          <Stethoscope className="h-full w-full" />
-                        </div>
                         <div>
                           <h1 className="text-2xl font-bold text-gray-900">
-                            Health Plan
+                            Medical Profile
                           </h1>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-gray-900">
-                            Date:
-                          </span>
-                          <span className="text-gray-600">
-                            {residentData.health.date || "Not specified"}
-                          </span>
-                        </div>
-                      </div>
+                      <ChevronRight
+                        className={`h-6 w-6 text-gray-400 transition-transform duration-200 ${
+                          isMedicalProfileExpanded ? "rotate-90" : ""
+                        }`}
+                      />
                     </div>
+                  </button>
 
-                    {/* Allergies and Medical Conditions */}
-                    <div className="grid grid-cols-2 gap-6 mb-6">
+                  {/* Collapsible content */}
+                  {isMedicalProfileExpanded && (
+                    <div className="grid grid-cols-2 gap-6 mt-4 transition-all duration-200">
                       {/* Allergies */}
                       <div className="border border-gray-200 rounded-lg p-6">
                         <div className="flex items-center gap-3 mb-4">
@@ -898,8 +892,8 @@ const ResidentDetails = () => {
                       {/* Medical Conditions */}
                       <div className="border border-gray-200 rounded-lg p-6">
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="p-2 bg-purple-50 rounded-lg">
-                            <Stethoscope className="h-5 w-5 text-cyan-500" />
+                          <div className="p-2 bg-red-50 rounded-lg">
+                            <AlertTriangle className="h-5 w-5 text-red-500" />
                           </div>
                           <h2 className="text-lg font-semibold text-gray-900">
                             Medical Conditions
@@ -910,15 +904,51 @@ const ResidentDetails = () => {
                             (condition, index) => (
                               <div
                                 key={index}
-                                className="flex items-center gap-3 p-3 bg-cyan-50/50 rounded-lg"
+                                className="flex items-center gap-3 p-3 bg-red-50/50 rounded-lg"
                               >
-                                <div className="h-2 w-2 bg-cyan-500 rounded-full"></div>
+                                <div className="h-2 w-2 bg-red-500 rounded-full"></div>
                                 <span className="text-gray-600">
                                   {condition}
                                 </span>
                               </div>
                             )
                           )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Health Plan Section */}
+                {!residentData.health.conditions.length ? (
+                  <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-white/20 text-center">
+                    <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      No Health Records Added
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      Add health information using the quick actions panel.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-xl p-8 shadow-lg">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
+                      <div className="flex items-center gap-4">
+                        <div>
+                          <h1 className="text-2xl font-bold text-gray-900">
+                            Health Plan
+                          </h1>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-gray-900">
+                            Date:
+                          </span>
+                          <span className="text-gray-600">
+                            {residentData.health.date || "Not specified"}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -934,89 +964,144 @@ const ResidentDetails = () => {
                             Medication Details
                           </h2>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-4">
                           <span className="text-sm text-gray-500">
                             Total Medications:{" "}
                             {residentData.health.medications.length}
                           </span>
+                          {/* Pagination Controls */}
+                          {residentData.health.medications.length >
+                            itemsPerPage && (
+                            <div className="flex items-center bg-gray-50 rounded-lg p-1">
+                              <button
+                                onClick={() =>
+                                  setCurrentPage((prev) =>
+                                    Math.max(prev - 1, 0)
+                                  )
+                                }
+                                disabled={currentPage === 0}
+                                className="p-2 hover:bg-gray-100 rounded-lg disabled:opacity-50 transition-colors"
+                              >
+                                <ChevronLeft className="h-4 w-4 text-gray-600" />
+                              </button>
+                              <span className="px-4 py-1 text-sm text-gray-600">
+                                {currentPage + 1} /{" "}
+                                {Math.ceil(
+                                  residentData.health.medications.length /
+                                    itemsPerPage
+                                )}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  setCurrentPage((prev) =>
+                                    Math.min(
+                                      prev + 1,
+                                      Math.ceil(
+                                        residentData.health.medications.length /
+                                          itemsPerPage
+                                      ) - 1
+                                    )
+                                  )
+                                }
+                                disabled={
+                                  currentPage >=
+                                  Math.ceil(
+                                    residentData.health.medications.length /
+                                      itemsPerPage
+                                  ) -
+                                    1
+                                }
+                                className="p-2 hover:bg-gray-100 rounded-lg disabled:opacity-50 transition-colors"
+                              >
+                                <ChevronRight className="h-4 w-4 text-gray-600" />
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
 
+                      {/* Medication Cards */}
                       <div className="grid grid-cols-1 gap-6">
-                        {residentData.health.medications.map((med, index) => (
-                          <div
-                            key={index}
-                            className="bg-white rounded-xl border border-gray-100 overflow-hidden"
-                          >
-                            {/* Medication Header */}
-                            <div className="bg-gradient-to-r from-cyan-50 to-blue-50 px-6 py-4 border-b border-gray-100">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                                    <Pill className="h-5 w-5 text-cyan-500" />
+                        {residentData.health.medications
+                          .slice(
+                            currentPage * itemsPerPage,
+                            (currentPage + 1) * itemsPerPage
+                          )
+                          .map((med, index) => (
+                            <div
+                              key={index}
+                              className="bg-white rounded-xl border border-gray-100 overflow-hidden"
+                            >
+                              {/* Medication Header */}
+                              <div className="bg-gradient-to-r from-cyan-50 to-blue-50 px-6 py-4 border-b border-gray-100">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                      <Pill className="h-5 w-5 text-cyan-500" />
+                                    </div>
+                                    <div>
+                                      <h3 className="font-semibold text-gray-900">
+                                        {med.name || "No medication name"}
+                                      </h3>
+                                      <p className="text-sm text-gray-600">
+                                        Medication{" "}
+                                        {index + 1 + currentPage * itemsPerPage}
+                                      </p>
+                                    </div>
                                   </div>
-                                  <div>
-                                    <h3 className="font-semibold text-gray-900">
-                                      {med.name || "No medication name"}
-                                    </h3>
-                                    <p className="text-sm text-gray-600">
-                                      Medication {index + 1}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span
-                                    className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                      med.status === "Taken"
-                                        ? "bg-green-50 text-green-600"
-                                        : "bg-yellow-50 text-yellow-600"
-                                    }`}
-                                  >
-                                    {med.status}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Medication Details Grid */}
-                            <div className="p-6">
-                              <div className="grid grid-cols-3 gap-6">
-                                <div className="space-y-2">
-                                  <p className="text-sm font-semibold text-gray-900">
-                                    Dosage
-                                  </p>
                                   <div className="flex items-center gap-2">
-                                    <p className="text-gray-600">
-                                      {med.dosage || "Not specified"}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                  <p className="text-sm font-semibold text-gray-900">
-                                    Quantity
-                                  </p>
-                                  <div className="flex items-center gap-2">
-                                    <p className="text-gray-600">
-                                      {med.quantity || "Not specified"}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                  <p className="text-sm font-semibold text-gray-900">
-                                    Time
-                                  </p>
-                                  <div className="flex items-center gap-2">
-                                    <p className="text-gray-600">
-                                      {formatTime(med.time)}
-                                    </p>
+                                    <span
+                                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                        med.status === "Taken"
+                                          ? "bg-green-50 text-green-600"
+                                          : "bg-yellow-50 text-yellow-600"
+                                      }`}
+                                    >
+                                      {med.status}
+                                    </span>
                                   </div>
                                 </div>
                               </div>
+
+                              {/* Medication Details Grid */}
+                              <div className="p-6">
+                                <div className="grid grid-cols-3 gap-6">
+                                  <div className="space-y-2">
+                                    <p className="text-sm font-semibold text-gray-900">
+                                      Dosage
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                      <p className="text-gray-600">
+                                        {med.dosage || "Not specified"}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <p className="text-sm font-semibold text-gray-900">
+                                      Quantity
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                      <p className="text-gray-600">
+                                        {med.quantity || "Not specified"}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <p className="text-sm font-semibold text-gray-900">
+                                      Time
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                      <p className="text-gray-600">
+                                        {formatTime(med.time)}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
                       </div>
                     </div>
 

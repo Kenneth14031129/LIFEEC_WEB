@@ -5,13 +5,16 @@ import {
   Pill,
   FileText,
   Calendar,
-  Clock,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useState } from "react";
 
 const HealthReviewModal = ({ isOpen, onClose, healthRecords }) => {
   const [searchDate, setSearchDate] = useState("");
-  const [searchView, setSearchView] = useState("all"); // "all", "date", "search"
+  const [searchView, setSearchView] = useState("all");
+  const [currentMedicationPage, setCurrentMedicationPage] = useState({});
+  const medicationsPerPage = 2;
 
   if (!isOpen) return null;
 
@@ -33,7 +36,6 @@ const HealthReviewModal = ({ isOpen, onClose, healthRecords }) => {
     }
   };
 
-  // Sort and filter records based on search/date
   const filteredAndSortedRecords = [...healthRecords]
     .sort((a, b) => {
       const dateA = new Date(a.date || a.createdAt);
@@ -50,13 +52,16 @@ const HealthReviewModal = ({ isOpen, onClose, healthRecords }) => {
       return true;
     });
 
+  // Initialize pagination state for new records if needed
+  filteredAndSortedRecords.forEach((record) => {
+    if (!(record._id in currentMedicationPage)) {
+      currentMedicationPage[record._id] = 0;
+    }
+  });
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto font-[Poppins]">
-      <div
-        className="fixed inset-0 bg-black/30"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      <div className="fixed inset-0 bg-black/30" onClick={onClose} />
 
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <div className="relative w-full max-w-4xl bg-white rounded-2xl p-8">
@@ -99,139 +104,216 @@ const HealthReviewModal = ({ isOpen, onClose, healthRecords }) => {
           </div>
 
           <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-4">
-            {filteredAndSortedRecords.map((record, index) => (
-              <div
-                key={record._id || index}
-                className="border border-gray-200 rounded-xl p-6"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        record.status === "Critical"
-                          ? "bg-red-50 text-red-600"
-                          : "bg-green-50 text-green-600"
-                      }`}
-                    >
-                      {record.status}
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-500">
-                      <Calendar className="h-4 w-4" />
-                      <span className="text-sm">
-                        {record.date || record.createdAt}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+            {filteredAndSortedRecords.map((record) => {
+              // Get medications array, handling both new and old format
+              const medications =
+                record.allMedications ||
+                (record.medications && typeof record.medications === "string"
+                  ? [
+                      {
+                        name: record.medications,
+                        dosage: record.dosage,
+                        quantity: record.quantity,
+                        medicationTime: record.medicationTime,
+                        isMedicationTaken: record.isMedicationTaken,
+                      },
+                    ]
+                  : record.medications || []);
 
-                <div className="grid grid-cols-2 gap-6 mb-6">
-                  {/* Allergies */}
-                  <div className="bg-red-50/30 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <AlertTriangle className="h-5 w-5 text-red-500" />
-                      <h3 className="font-medium text-gray-900">Allergies</h3>
-                    </div>
-                    <p className="text-gray-700">
-                      {record.allergies || "None reported"}
-                    </p>
-                  </div>
+              const totalPages = Math.ceil(
+                medications.length / medicationsPerPage
+              );
+              const currentPage = currentMedicationPage[record._id] || 0;
+              const paginatedMedications = medications.slice(
+                currentPage * medicationsPerPage,
+                (currentPage + 1) * medicationsPerPage
+              );
 
-                  {/* Medical Condition */}
-                  <div className="bg-purple-50/30 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <AlertTriangle className="h-5 w-5 text-purple-500" />
-                      <h3 className="font-medium text-gray-900">
-                        Medical Condition
-                      </h3>
-                    </div>
-                    <p className="text-gray-700">
-                      {record.medicalCondition || "None reported"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Medication Details */}
-                <div className="bg-blue-50/30 rounded-lg p-4 mb-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Pill className="h-5 w-5 text-blue-500" />
-                    <h3 className="font-medium text-gray-900">
-                      Medication Details
-                    </h3>
-                  </div>
-                  <div className="grid grid-cols-5 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">Medication</p>
-                      <p className="font-medium text-gray-900">
-                        {record.medications}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">Dosage</p>
-                      <p className="font-medium text-gray-900">
-                        {record.dosage}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">Quantity</p>
-                      <p className="font-medium text-gray-900">
-                        {record.quantity || "Not specified"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">Time</p>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-400" />
-                        <p className="font-medium text-gray-900">
-                          {formatTime(record.medicationTime)}
-                        </p>
+              return (
+                <div
+                  key={record._id}
+                  className="border border-gray-200 rounded-xl p-6"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${
+                          record.status === "Critical"
+                            ? "bg-red-50 text-red-600"
+                            : "bg-green-50 text-green-600"
+                        }`}
+                      >
+                        {record.status}
                       </div>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">Status</p>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={record.isMedicationTaken}
-                          readOnly
-                          className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
-                        />
-                        <span className="text-sm text-gray-700">
-                          {record.isMedicationTaken
-                            ? "Medication taken"
-                            : "Not taken"}
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <Calendar className="h-4 w-4" />
+                        <span className="text-sm">
+                          {record.date || record.createdAt}
                         </span>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Assessment & Instructions */}
-                <div className="space-y-4">
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <FileText className="h-5 w-5 text-gray-500" />
-                      <h3 className="font-medium text-gray-900">
-                        Assessment Notes
-                      </h3>
+                  <div className="grid grid-cols-2 gap-6 mb-6">
+                    {/* Allergies */}
+                    <div className="bg-red-50/30 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <AlertTriangle className="h-5 w-5 text-red-500" />
+                        <h3 className="font-semibold text-gray-900">
+                          Allergies
+                        </h3>
+                      </div>
+                      <p className="text-gray-600">
+                        {record.allergies || "None reported"}
+                      </p>
                     </div>
-                    <p className="text-gray-700">
-                      {record.assessment || "No assessment notes available"}
-                    </p>
+
+                    {/* Medical Condition */}
+                    <div className="bg-red-50/30 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <AlertTriangle className="h-5 w-5 text-red-500" />
+                        <h3 className="font-semibold text-gray-900">
+                          Medical Condition
+                        </h3>
+                      </div>
+                      <p className="text-gray-600">
+                        {record.medicalCondition || "None reported"}
+                      </p>
+                    </div>
                   </div>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <FileText className="h-5 w-5 text-gray-500" />
-                      <h3 className="font-medium text-gray-900">
-                        Instructions
-                      </h3>
+
+                  {/* Medication Details */}
+                  <div className="bg-blue-50/30 rounded-lg p-4 mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <Pill className="h-5 w-5 text-blue-500" />
+                        <h3 className="font-semibold text-gray-900">
+                          Medication Details
+                        </h3>
+                      </div>
+                      {totalPages > 1 && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              setCurrentMedicationPage({
+                                ...currentMedicationPage,
+                                [record._id]: Math.max(0, currentPage - 1),
+                              });
+                            }}
+                            disabled={currentPage === 0}
+                            className="p-1 hover:bg-blue-100 rounded-lg disabled:opacity-50"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </button>
+                          <span className="text-sm text-gray-600">
+                            {currentPage + 1} / {totalPages}
+                          </span>
+                          <button
+                            onClick={() => {
+                              setCurrentMedicationPage({
+                                ...currentMedicationPage,
+                                [record._id]: Math.min(
+                                  currentPage + 1,
+                                  totalPages - 1
+                                ),
+                              });
+                            }}
+                            disabled={currentPage >= totalPages - 1}
+                            className="p-1 hover:bg-blue-100 rounded-lg disabled:opacity-50"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <p className="text-gray-700">
-                      {record.instructions || "No instructions available"}
-                    </p>
+
+                    <div className="space-y-4">
+                      {paginatedMedications.map((medication, index) => (
+                        <div
+                          key={index}
+                          className="grid grid-cols-5 gap-4 bg-white p-4 rounded-lg"
+                        >
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900 mb-1">
+                              Medication
+                            </p>
+                            <p className="text-gray-600">{medication.name}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900 mb-1">
+                              Dosage
+                            </p>
+                            <p className="text-gray-600">{medication.dosage}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900 mb-1">
+                              Quantity
+                            </p>
+                            <p className="text-gray-600">
+                              {medication.quantity || "Not specified"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900 mb-1">
+                              Time
+                            </p>
+
+                            <p className="text-gray-600">
+                              {formatTime(medication.medicationTime)}
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900 mb-1">
+                              Status
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={medication.isMedicationTaken}
+                                readOnly
+                                className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                              />
+                              <span className="text-sm text-gray-600">
+                                {medication.isMedicationTaken
+                                  ? "Medication taken"
+                                  : "Not taken"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Assessment & Instructions */}
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <FileText className="h-5 w-5 text-gray-500" />
+                        <h3 className="font-semibold text-gray-900">
+                          Assessment Notes
+                        </h3>
+                      </div>
+                      <p className="text-gray-600">
+                        {record.assessment || "No assessment notes available"}
+                      </p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <FileText className="h-5 w-5 text-gray-500" />
+                        <h3 className="font-semibold text-gray-900">
+                          Instructions
+                        </h3>
+                      </div>
+                      <p className="text-gray-600">
+                        {record.instructions || "No instructions available"}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {filteredAndSortedRecords.length === 0 && (
               <div className="text-center py-8">
@@ -258,11 +340,34 @@ HealthReviewModal.propTypes = {
       createdAt: PropTypes.string,
       allergies: PropTypes.string,
       medicalCondition: PropTypes.string,
-      medications: PropTypes.string,
+      // Support both old and new format
+      medications: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.arrayOf(
+          PropTypes.shape({
+            name: PropTypes.string,
+            dosage: PropTypes.string,
+            quantity: PropTypes.string,
+            medicationTime: PropTypes.string,
+            isMedicationTaken: PropTypes.bool,
+          })
+        ),
+      ]),
+      // Old format fields
       dosage: PropTypes.string,
       quantity: PropTypes.string,
       medicationTime: PropTypes.string,
       isMedicationTaken: PropTypes.bool,
+      // New format field
+      allMedications: PropTypes.arrayOf(
+        PropTypes.shape({
+          name: PropTypes.string,
+          dosage: PropTypes.string,
+          quantity: PropTypes.string,
+          medicationTime: PropTypes.string,
+          isMedicationTaken: PropTypes.bool,
+        })
+      ),
       assessment: PropTypes.string,
       instructions: PropTypes.string,
     })
