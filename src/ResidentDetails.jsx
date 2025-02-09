@@ -956,10 +956,10 @@ const ResidentDetails = () => {
                                     <Pill className="h-5 w-5 text-cyan-500" />
                                   </div>
                                   <div>
-                                    <h3 className="font-medium text-gray-900">
+                                    <h3 className="font-semibold text-gray-900">
                                       {med.name || "No medication name"}
                                     </h3>
-                                    <p className="text-sm text-gray-500">
+                                    <p className="text-sm text-gray-600">
                                       Medication {index + 1}
                                     </p>
                                   </div>
@@ -982,33 +982,33 @@ const ResidentDetails = () => {
                             <div className="p-6">
                               <div className="grid grid-cols-3 gap-6">
                                 <div className="space-y-2">
-                                  <p className="text-sm font-medium text-gray-500">
+                                  <p className="text-sm font-semibold text-gray-900">
                                     Dosage
                                   </p>
                                   <div className="flex items-center gap-2">
-                                    <p className="text-gray-900">
+                                    <p className="text-gray-600">
                                       {med.dosage || "Not specified"}
                                     </p>
                                   </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                  <p className="text-sm font-medium text-gray-500">
+                                  <p className="text-sm font-semibold text-gray-900">
                                     Quantity
                                   </p>
                                   <div className="flex items-center gap-2">
-                                    <p className="text-gray-900">
+                                    <p className="text-gray-600">
                                       {med.quantity || "Not specified"}
                                     </p>
                                   </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                  <p className="text-sm font-medium text-gray-500">
+                                  <p className="text-sm font-semibold text-gray-900">
                                     Time
                                   </p>
                                   <div className="flex items-center gap-2">
-                                    <p className="text-gray-900">
+                                    <p className="text-gray-600">
                                       {formatTime(med.time)}
                                     </p>
                                   </div>
