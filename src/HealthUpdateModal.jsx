@@ -27,11 +27,19 @@ const HealthUpdateModal = ({
     instructions: "",
   });
 
+  // Check if there are existing allergies and conditions
+  const hasExistingAllergies = healthRecords?.[0]?.allergies?.length > 0;
+  const hasExistingConditions =
+    healthRecords?.[0]?.medicalCondition?.length > 0;
+
   const handleAddAllergy = () => {
-    setFormData((prev) => ({
-      ...prev,
-      allergies: [...prev.allergies, ""],
-    }));
+    // Only allow adding allergies if it's not a new record or if there are no existing allergies
+    if (!isAddingNew || !hasExistingAllergies) {
+      setFormData((prev) => ({
+        ...prev,
+        allergies: [...prev.allergies, ""],
+      }));
+    }
   };
 
   const handleRemoveAllergy = (index) => {
@@ -49,10 +57,13 @@ const HealthUpdateModal = ({
   };
 
   const handleAddCondition = () => {
-    setFormData((prev) => ({
-      ...prev,
-      medicalCondition: [...prev.medicalCondition, ""],
-    }));
+    // Only allow adding conditions if it's not a new record or if there are no existing conditions
+    if (!isAddingNew || !hasExistingConditions) {
+      setFormData((prev) => ({
+        ...prev,
+        medicalCondition: [...prev.medicalCondition, ""],
+      }));
+    }
   };
 
   const handleRemoveCondition = (index) => {
@@ -75,12 +86,16 @@ const HealthUpdateModal = ({
   useEffect(() => {
     if (isOpen) {
       if (isAddingNew) {
-        // Reset form to default values when adding new
-        setFormData({
-          date: new Date().toISOString().split("T")[0],
+        // Completely reset the form, preserving the current date selection
+        setFormData((prevState) => ({
+          date: prevState.date || new Date().toISOString().split("T")[0],
           status: "Stable",
-          allergies: [],
-          medicalCondition: [],
+          allergies:
+            healthRecords.length > 0 ? healthRecords[0].allergies || [] : [],
+          medicalCondition:
+            healthRecords.length > 0
+              ? healthRecords[0].medicalCondition || []
+              : [],
           medications: [
             {
               name: "",
@@ -92,28 +107,54 @@ const HealthUpdateModal = ({
           ],
           assessment: "",
           instructions: "",
-        });
-      } else if (healthRecords.length > 0) {
-        const recordToEdit =
-          healthRecords.find((record) => record.date === formData.date) ||
-          healthRecords[0];
+        }));
+      } else {
+        // For updating existing record, find the most recent record
+        const sortedRecords = [...healthRecords].sort(
+          (a, b) => new Date(b.date) - new Date(a.date)
+        );
+        const recordToEdit = sortedRecords[0]; // Get the most recent record
 
-        // Convert all medications to the new format
-        const medications =
-          recordToEdit.allMedications ||
-          (recordToEdit.medications
-            ? Array.isArray(recordToEdit.medications)
-              ? recordToEdit.medications
-              : [
-                  {
-                    name: recordToEdit.medications,
-                    dosage: recordToEdit.dosage,
-                    quantity: recordToEdit.quantity || "",
-                    medicationTime: recordToEdit.medicationTime || "",
-                    isMedicationTaken: recordToEdit.isMedicationTaken || false,
-                  },
-                ]
-            : []);
+        // Fixed medication handling logic
+        let medications;
+        if (
+          recordToEdit.allMedications &&
+          recordToEdit.allMedications.length > 0
+        ) {
+          // Use allMedications if available
+          medications = recordToEdit.allMedications;
+        } else if (typeof recordToEdit.medications === "string") {
+          // Handle old format where medications is a string
+          medications = [
+            {
+              name: recordToEdit.medications || "",
+              dosage: recordToEdit.dosage || "",
+              quantity: recordToEdit.quantity || "",
+              medicationTime: recordToEdit.medicationTime || "",
+              isMedicationTaken: recordToEdit.isMedicationTaken || false,
+            },
+          ];
+        } else if (Array.isArray(recordToEdit.medications)) {
+          // Handle case where medications is an array
+          medications = recordToEdit.medications.map((med) => ({
+            name: med.name || "",
+            dosage: med.dosage || "",
+            quantity: med.quantity || "",
+            medicationTime: med.medicationTime || "",
+            isMedicationTaken: med.isMedicationTaken || false,
+          }));
+        } else {
+          // Default empty medication if no data available
+          medications = [
+            {
+              name: "",
+              dosage: "",
+              quantity: "",
+              medicationTime: "",
+              isMedicationTaken: false,
+            },
+          ];
+        }
 
         setFormData({
           date: recordToEdit.date,
@@ -126,7 +167,7 @@ const HealthUpdateModal = ({
         });
       }
     }
-  }, [isOpen, isAddingNew, healthRecords, formData.date]);
+  }, [isOpen, isAddingNew, healthRecords]);
 
   const handleAddMedication = () => {
     setFormData({
@@ -176,6 +217,113 @@ const HealthUpdateModal = ({
 
   if (!isOpen) return null;
 
+  // Render the allergies section with conditional controls
+  const renderAllergiesSection = () => (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <label className="block text-sm font-medium text-gray-700">
+          Allergies
+        </label>
+        {(!isAddingNew || !hasExistingAllergies) && (
+          <button
+            type="button"
+            onClick={handleAddAllergy}
+            className="flex items-center gap-2 px-2 py-1 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Add Allergy
+          </button>
+        )}
+      </div>
+      <div className="space-y-2">
+        {formData.allergies.map((allergy, index) => (
+          <div key={index} className="flex items-center gap-2">
+            <span className="text-gray-500">•</span>
+            <input
+              type="text"
+              value={allergy}
+              onChange={(e) => handleAllergyChange(index, e.target.value)}
+              className="flex-1 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              placeholder="Enter allergy"
+              disabled={isAddingNew && hasExistingAllergies}
+            />
+            {(!isAddingNew || !hasExistingAllergies) && (
+              <button
+                type="button"
+                onClick={() => handleRemoveAllergy(index)}
+                className="text-red-500 hover:text-red-700"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        ))}
+        {formData.allergies.length === 0 && (
+          <p className="text-sm text-gray-500">No allergies added</p>
+        )}
+        {isAddingNew && hasExistingAllergies && (
+          <p className="text-sm text-blue-600">
+            Allergies can only be modified through the Update Health Plan option
+          </p>
+        )}
+      </div>
+    </div>
+  );
+
+  // Render the medical conditions section with conditional controls
+  const renderMedicalConditionsSection = () => (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <label className="block text-sm font-medium text-gray-700">
+          Medical Conditions
+        </label>
+        {(!isAddingNew || !hasExistingConditions) && (
+          <button
+            type="button"
+            onClick={handleAddCondition}
+            className="flex items-center gap-2 px-2 py-1 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Add Condition
+          </button>
+        )}
+      </div>
+      <div className="space-y-2">
+        {formData.medicalCondition.map((condition, index) => (
+          <div key={index} className="flex items-center gap-2">
+            <span className="text-gray-500">•</span>
+            <input
+              type="text"
+              value={condition}
+              onChange={(e) => handleConditionChange(index, e.target.value)}
+              className="flex-1 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              placeholder="Enter medical condition"
+              disabled={isAddingNew && hasExistingConditions}
+            />
+            {(!isAddingNew || !hasExistingConditions) && (
+              <button
+                type="button"
+                onClick={() => handleRemoveCondition(index)}
+                className="text-red-500 hover:text-red-700"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        ))}
+        {formData.medicalCondition.length === 0 && (
+          <p className="text-sm text-gray-500">No medical conditions added</p>
+        )}
+        {isAddingNew && hasExistingConditions && (
+          <p className="text-sm text-blue-600">
+            Medical conditions can only be modified through the Update Health
+            Plan option
+          </p>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 font-[Poppins]">
       <div className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -202,10 +350,14 @@ const HealthUpdateModal = ({
                 type="date"
                 value={formData.date}
                 onChange={(e) =>
+                  isAddingNew &&
                   setFormData({ ...formData, date: e.target.value })
                 }
-                className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                className={`w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${
+                  !isAddingNew ? "bg-gray-100 cursor-not-allowed" : ""
+                }`}
                 required
+                disabled={!isAddingNew}
               />
             </div>
 
@@ -228,93 +380,8 @@ const HealthUpdateModal = ({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Allergies */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Allergies
-                </label>
-                <button
-                  type="button"
-                  onClick={handleAddAllergy}
-                  className="flex items-center gap-2 px-2 py-1 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Allergy
-                </button>
-              </div>
-              <div className="space-y-2">
-                {formData.allergies.map((allergy, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <span className="text-gray-500">•</span>
-                    <input
-                      type="text"
-                      value={allergy}
-                      onChange={(e) =>
-                        handleAllergyChange(index, e.target.value)
-                      }
-                      className="flex-1 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Enter allergy"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveAllergy(index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-                {formData.allergies.length === 0 && (
-                  <p className="text-sm text-gray-500">No allergies added</p>
-                )}
-              </div>
-            </div>
-
-            {/* Medical Conditions */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Medical Conditions
-                </label>
-                <button
-                  type="button"
-                  onClick={handleAddCondition}
-                  className="flex items-center gap-2 px-2 py-1 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Condition
-                </button>
-              </div>
-              <div className="space-y-2">
-                {formData.medicalCondition.map((condition, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <span className="text-gray-500">•</span>
-                    <input
-                      type="text"
-                      value={condition}
-                      onChange={(e) =>
-                        handleConditionChange(index, e.target.value)
-                      }
-                      className="flex-1 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Enter medical condition"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveCondition(index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-                {formData.medicalCondition.length === 0 && (
-                  <p className="text-sm text-gray-500">
-                    No medical conditions added
-                  </p>
-                )}
-              </div>
-            </div>
+            {renderAllergiesSection()}
+            {renderMedicalConditionsSection()}
           </div>
 
           {/* Medication Details */}
