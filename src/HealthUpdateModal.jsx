@@ -242,7 +242,7 @@ const HealthUpdateModal = ({
                 htmlFor="medicationTaken"
                 className="text-sm text-gray-700"
               >
-                Medication has been taken
+                {formData.isMedicationTaken ? "Medication taken" : "Not taken"}
               </label>
             </div>
           </div>
