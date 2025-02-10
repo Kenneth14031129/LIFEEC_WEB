@@ -11,6 +11,7 @@ import Messages from "./Messages";
 import ViewProfile from "./ViewProfile";
 import ResidentDetails from "./ResidentDetails";
 import ForgotPassword from "./ForgotPassword";
+import ArchivePage from "./ArchivePage";
 
 // Simple auth check - you might want to replace this with your actual auth logic
 const isAuthenticated = () => {
@@ -91,6 +92,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           element={
             <ProtectedRoute>
               <ForgotPassword />
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path="/archive"
+          element={
+            <ProtectedRoute>
+              <ArchivePage />
             </ProtectedRoute>
           }
         />

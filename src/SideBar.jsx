@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import { Layout, UserPlus, Users, LogOut, MessageCircle } from "lucide-react";
+import { Layout, UserPlus, Users, LogOut, MessageCircle, Archive } from "lucide-react";
 
 const Sidebar = ({ activePage = "dashboard" }) => {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ const Sidebar = ({ activePage = "dashboard" }) => {
     { icon: Users, label: "Residents List", route: "/residents-list" },
     { icon: UserPlus, label: "Add Resident", route: "/add-resident" },
     { icon: MessageCircle, label: "Messages", route: "/messages" },
+    { icon: Archive, label: "Archive", route: "/archive" },
   ];
 
   return (
