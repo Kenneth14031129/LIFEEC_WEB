@@ -1,5 +1,15 @@
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
+import nodemailer from 'nodemailer';
+import { generateOTP } from '../utils/otpUtils.js';
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
 
 // Login user
 export const loginUser = async (req, res) => {
@@ -33,10 +43,32 @@ export const registerUser = async (req, res) => {
   try {
     const { fullName, email, password, userType } = req.body;
 
+    // Check if user type requires verification
+    const requiresVerification = ['admin', 'owner'].includes(userType);
+
     const userExists = await User.findOne({ email });
     if (userExists) {
-      res.status(400).json({ message: "User already exists" });
-      return;
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    let otp = null;
+    let otpExpiry = null;
+
+    if (requiresVerification) {
+      otp = generateOTP();
+      otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 minutes
+
+      // Send OTP email
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: 'LIFEEC Registration OTP',
+        html: `
+          <h1>Welcome to LIFEEC</h1>
+          <p>Your OTP for registration is: <strong>${otp}</strong></p>
+          <p>This OTP will expire in 10 minutes.</p>
+        `
+      });
     }
 
     const user = await User.create({
@@ -44,6 +76,9 @@ export const registerUser = async (req, res) => {
       email,
       password,
       userType,
+      otp,
+      otpExpiry,
+      isVerified: !requiresVerification // Set to true for non-admin/owner accounts
     });
 
     res.status(201).json({
@@ -51,7 +86,50 @@ export const registerUser = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       userType: user.userType,
-      token: generateToken(user._id),
+      requiresVerification,
+      token: requiresVerification ? null : generateToken(user._id)
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ message: "User already verified" });
+    }
+
+    if (!user.otp || !user.otpExpiry) {
+      return res.status(400).json({ message: "No OTP found for this user" });
+    }
+
+    if (Date.now() > user.otpExpiry) {
+      return res.status(400).json({ message: "OTP has expired" });
+    }
+
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    user.isVerified = true;
+    user.otp = null;
+    user.otpExpiry = null;
+    await user.save();
+
+    res.json({
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      userType: user.userType,
+      token: generateToken(user._id)
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -202,6 +280,23 @@ export const getArchivedUsers = async (req, res) => {
       isArchived: true 
     }).select('-password');
     res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const restoreUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.isArchived = false;
+    user.archivedDate = null;
+    await user.save();
+
+    res.json({ message: "User restored successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

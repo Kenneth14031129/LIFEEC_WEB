@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Archive, Search, Filter, X, RotateCcw } from "lucide-react";
 import Sidebar from "./SideBar";
-import { getArchivedUsers } from "../services/api";
+import { getArchivedUsers, restoreUser } from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 const ArchivePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -9,6 +10,9 @@ const ArchivePage = () => {
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [error, setError] = useState(null);
+  const [isRestoreDialogOpen, setIsRestoreDialogOpen] = useState(false);
+  const [userToRestore, setUserToRestore] = useState(null);
+  const navigate = useNavigate();
 
   const filterOptions = ["Admin", "Owner", "Nurse", "Nutritionist", "Relative"];
 
@@ -37,12 +41,19 @@ const ArchivePage = () => {
     setSelectedFilters([]);
   };
 
-  const handleRestore = async (userId) => {
+  const handleRestore = (user) => {
+    setUserToRestore(user);
+    setIsRestoreDialogOpen(true);
+  };
+
+  const confirmRestore = async () => {
     try {
-      // Replace with actual API call
-      console.log(`Restoring user ${userId}`);
-      // After successful restore, remove from archived list
-      setArchivedUsers((prev) => prev.filter((user) => user._id !== userId));
+      await restoreUser(userToRestore._id);
+      setArchivedUsers((prevUsers) =>
+        prevUsers.filter((user) => user._id !== userToRestore._id)
+      );
+      setIsRestoreDialogOpen(false);
+      navigate("/add-user"); // Optionally navigate to the users page
     } catch (err) {
       setError(err.message);
     }
@@ -247,7 +258,7 @@ const ArchivePage = () => {
                       <td className="px-4 py-4">
                         <div className="flex items-center justify-center">
                           <button
-                            onClick={() => handleRestore(user._id)}
+                            onClick={() => handleRestore(user)}
                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                             title="Restore user"
                           >
@@ -269,6 +280,33 @@ const ArchivePage = () => {
           </div>
         </div>
       </div>
+      {isRestoreDialogOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Restore User
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to restore {userToRestore?.fullName}? They
+              will be able to log in to the system again.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setIsRestoreDialogOpen(false)}
+                className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmRestore}
+                className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                Restore User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

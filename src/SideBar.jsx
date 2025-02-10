@@ -1,6 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import { Layout, UserPlus, Users, LogOut, MessageCircle, Archive } from "lucide-react";
+import {
+  Layout,
+  UserPlus,
+  Users,
+  LogOut,
+  MessageCircle,
+  Archive,
+} from "lucide-react";
 
 const Sidebar = ({ activePage = "dashboard" }) => {
   const navigate = useNavigate();
@@ -69,14 +76,9 @@ const Sidebar = ({ activePage = "dashboard" }) => {
   );
 };
 
-// Add PropTypes validation
+// Only keep PropTypes for type checking
 Sidebar.propTypes = {
   activePage: PropTypes.string,
-};
-
-// Add default props (optional since we already have default parameter)
-Sidebar.defaultProps = {
-  activePage: "dashboard",
 };
 
 export default Sidebar;

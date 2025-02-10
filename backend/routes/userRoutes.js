@@ -10,6 +10,8 @@ import {
   changePassword,
   archiveUser,
   getArchivedUsers,
+  restoreUser,
+  verifyOTP,
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -26,5 +28,7 @@ router.get("/", protect, getUsers);
 router.post("/add", protect, addUser);
 router.put("/:id/archive", protect, archiveUser);
 router.get("/archived", protect, getArchivedUsers);
+router.put("/:id/restore", protect, restoreUser);
+router.post("/verify-otp", verifyOTP);
 
 export default router;

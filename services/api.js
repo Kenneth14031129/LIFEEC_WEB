@@ -45,6 +45,18 @@ export const loginUser = async (email, password) => {
   }
 };
 
+export const verifyOTP = async (otpData) => {
+  try {
+    const { data } = await api.post('/users/verify-otp', otpData);
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+    }
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'OTP verification failed' };
+  }
+};
+
 // Resident List
 export const getResidents = async () => {
   try {
@@ -350,5 +362,14 @@ export const getArchivedUsers = async () => {
     return data;
   } catch (error) {
     throw error.response?.data || { message: 'Error fetching archived users' };
+  }
+};
+
+export const restoreUser = async (userId) => {
+  try {
+    const { data } = await api.put(`/users/${userId}/restore`);
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error restoring user' };
   }
 };

@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, KeySquare, AlertCircle } from "lucide-react";
 import HealthLogo from "./assets/Health.svg";
-import { loginUser, registerUser } from "../services/api";
+import { loginUser, registerUser, verifyOTP } from "../services/api";
+import PropTypes from "prop-types";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -10,6 +11,11 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showOTPVerification, setShowOTPVerification] = useState(false);
+  const [otpData, setOTPData] = useState({
+    email: "",
+    otp: "",
+  });
 
   const [loginData, setLoginData] = useState({
     email: "",
@@ -20,7 +26,7 @@ const Login = () => {
     fullName: "",
     email: "",
     password: "",
-    userType: "staff",
+    userType: "owner",
   });
 
   const handleLoginSubmit = async (e) => {
@@ -47,22 +53,49 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await registerUser({
+      const response = await registerUser({
         fullName: registerData.fullName,
         email: registerData.email,
         password: registerData.password,
         userType: registerData.userType,
       });
 
-      // Automatically switch to login form after successful registration
-      setIsLogin(true);
-      setLoginData({
-        email: registerData.email,
-        password: registerData.password,
-      });
+      if (response.requiresVerification) {
+        setOTPData({ email: registerData.email, otp: "" });
+        setShowOTPVerification(true);
+      } else {
+        // Handle normal registration success
+        setIsLogin(true);
+        setLoginData({
+          email: registerData.email,
+          password: registerData.password,
+        });
+      }
       setError("");
     } catch (error) {
       setError(error.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add OTP verification handler
+  const handleOTPVerify = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await verifyOTP(otpData);
+      // Store authentication data after successful verification
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("user", JSON.stringify(response));
+
+      setShowOTPVerification(false);
+      setIsLogin(true);
+      navigate("/dashboard"); // Navigate directly to dashboard after verification
+    } catch (error) {
+      setError(error.message || "OTP verification failed");
     } finally {
       setLoading(false);
     }
@@ -78,6 +111,15 @@ const Login = () => {
         <span className="text-sm">{message}</span>
       </div>
     );
+  };
+
+  ErrorMessage.propTypes = {
+    message: PropTypes.string,
+  };
+
+  // Optional: Add default props
+  ErrorMessage.defaultProps = {
+    message: "",
   };
 
   return (
@@ -344,6 +386,44 @@ const Login = () => {
           </div>
         </div>
       </div>
+      {/* OTP Verification Form */}
+      {showOTPVerification && (
+        <div className="absolute inset-0 bg-white/95 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+            <h3 className="text-2xl font-bold mb-6 text-gray-800">
+              Verify Your Account
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Please enter the verification code sent to your email.
+            </p>
+
+            <form onSubmit={handleOTPVerify} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Verification Code
+                </label>
+                <input
+                  type="text"
+                  value={otpData.otp}
+                  onChange={(e) =>
+                    setOTPData({ ...otpData, otp: e.target.value })
+                  }
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 px-4 rounded-xl text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-blue-700 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-lg shadow-blue-500/25 disabled:opacity-70"
+              >
+                {loading ? "Verifying..." : "Verify Code"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
