@@ -1,22 +1,27 @@
-import User from '../models/User.js';
-import generateToken from '../utils/generateToken.js';
+import User from "../models/User.js";
+import generateToken from "../utils/generateToken.js";
 
 // Login user
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
     const user = await User.findOne({ email });
     if (user && (await user.matchPassword(password))) {
+      if (user.isArchived) {
+        return res
+          .status(401)
+          .json({ message: "This account has been archived" });
+      }
       res.json({
         _id: user._id,
         fullName: user.fullName,
         email: user.email,
         userType: user.userType,
-        token: generateToken(user._id)
+        token: generateToken(user._id),
       });
     } else {
-      res.status(401).json({ message: 'Invalid email or password' });
+      res.status(401).json({ message: "Invalid email or password" });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -30,7 +35,7 @@ export const registerUser = async (req, res) => {
 
     const userExists = await User.findOne({ email });
     if (userExists) {
-      res.status(400).json({ message: 'User already exists' });
+      res.status(400).json({ message: "User already exists" });
       return;
     }
 
@@ -38,7 +43,7 @@ export const registerUser = async (req, res) => {
       fullName,
       email,
       password,
-      userType
+      userType,
     });
 
     res.status(201).json({
@@ -46,7 +51,7 @@ export const registerUser = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       userType: user.userType,
-      token: generateToken(user._id)
+      token: generateToken(user._id),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -56,7 +61,12 @@ export const registerUser = async (req, res) => {
 // Get all users
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find({}).select('-password');
+    const users = await User.find({
+      $or: [
+        { isArchived: false },
+        { isArchived: { $exists: false } }, // Also get users where isArchived field doesn't exist
+      ],
+    }).select("-password");
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -73,11 +83,11 @@ export const getProfile = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         userType: user.userType,
-        phone: user.phone || '',
-        location: user.location || ''
+        phone: user.phone || "",
+        location: user.location || "",
       });
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: "User not found" });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -93,11 +103,11 @@ export const updateProfile = async (req, res) => {
       user.email = req.body.email || user.email;
       user.phone = req.body.phone || user.phone;
       user.location = req.body.location || user.location;
-      
+
       if (req.body.password) {
         user.password = req.body.password;
       }
-      
+
       const updatedUser = await user.save();
       res.json({
         _id: updatedUser._id,
@@ -106,10 +116,10 @@ export const updateProfile = async (req, res) => {
         userType: updatedUser.userType,
         phone: updatedUser.phone,
         location: updatedUser.location,
-        token: generateToken(updatedUser._id)
+        token: generateToken(updatedUser._id),
       });
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: "User not found" });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -119,24 +129,23 @@ export const updateProfile = async (req, res) => {
 export const changePassword = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
-    
+
     const { currentPassword, newPassword } = req.body;
 
     // Verify current password
-    if (!await user.matchPassword(currentPassword)) {
-      return res.status(400).json({ message: 'Current password is incorrect' });
+    if (!(await user.matchPassword(currentPassword))) {
+      return res.status(400).json({ message: "Current password is incorrect" });
     }
 
     // Set new password
     user.password = newPassword;
     await user.save();
 
-    res.json({ message: 'Password changed successfully' });
+    res.json({ message: "Password changed successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 // Add new user
 export const addUser = async (req, res) => {
@@ -146,7 +155,7 @@ export const addUser = async (req, res) => {
     // Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: "User already exists" });
     }
 
     // Create new user
@@ -154,7 +163,7 @@ export const addUser = async (req, res) => {
       fullName,
       email,
       password,
-      userType
+      userType,
     });
 
     if (user) {
@@ -162,10 +171,38 @@ export const addUser = async (req, res) => {
         _id: user._id,
         fullName: user.fullName,
         email: user.email,
-        userType: user.userType
+        userType: user.userType,
       });
     }
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+export const archiveUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.isArchived = true;
+    user.archivedDate = new Date();
+    await user.save();
+
+    res.json({ message: "User archived successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getArchivedUsers = async (req, res) => {
+  try {
+    const users = await User.find({ 
+      isArchived: true 
+    }).select('-password');
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

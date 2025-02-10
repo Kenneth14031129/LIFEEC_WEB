@@ -286,7 +286,6 @@ export const changeUserPassword = async (passwordData) => {
 };
 
 //Messages
-// Get all conversations for current user
 export const getConversations = async () => {
   try {
     const { data } = await api.get('/conversations');
@@ -296,7 +295,6 @@ export const getConversations = async () => {
   }
 };
 
-// Get messages between current user and specified user
 export const getMessages = async (userId) => {
   try {
     const { data } = await api.get(`/messages/${userId}`);
@@ -306,7 +304,6 @@ export const getMessages = async (userId) => {
   }
 };
 
-// Send a new message
 export const sendMessage = async (receiverId, content) => {
   try {
     const { data } = await api.post('/messages', {
@@ -319,7 +316,6 @@ export const sendMessage = async (receiverId, content) => {
   }
 };
 
-// Mark messages from a sender as delivered
 export const markMessagesAsDelivered = async (senderId) => {
   try {
     const { data } = await api.put(`/messages/deliver/${senderId}`);
@@ -329,12 +325,30 @@ export const markMessagesAsDelivered = async (senderId) => {
   }
 };
 
-// Mark messages from a sender as read
 export const markMessagesAsRead = async (senderId) => {
   try {
     const { data } = await api.put(`/messages/${senderId}/read`);
     return data;
   } catch (error) {
     throw error.response?.data || { message: 'Error marking messages as read' };
+  }
+};
+
+//Archive
+export const archiveUser = async (userId) => {
+  try {
+    const { data } = await api.put(`/users/${userId}/archive`);
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error archiving user' };
+  }
+};
+
+export const getArchivedUsers = async () => {
+  try {
+    const { data } = await api.get('/users/archived');
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error fetching archived users' };
   }
 };

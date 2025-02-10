@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Archive, Search, Filter, X, RotateCcw } from "lucide-react";
 import Sidebar from "./SideBar";
+import { getArchivedUsers } from "../services/api";
 
 const ArchivePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -11,29 +12,11 @@ const ArchivePage = () => {
 
   const filterOptions = ["Admin", "Owner", "Nurse", "Nutritionist", "Relative"];
 
-  // Mock archived users data (replace with actual API call)
   useEffect(() => {
-    // Simulated API call
     const fetchArchivedUsers = async () => {
       try {
-        // Replace with actual API call
-        const mockData = [
-          {
-            _id: "1",
-            fullName: "John Doe",
-            email: "john@example.com",
-            userType: "nurse",
-            archivedDate: "2024-02-01",
-          },
-          {
-            _id: "2",
-            fullName: "Jane Smith",
-            email: "jane@example.com",
-            userType: "nutritionist",
-            archivedDate: "2024-02-05",
-          },
-        ];
-        setArchivedUsers(mockData);
+        const data = await getArchivedUsers();
+        setArchivedUsers(data);
       } catch (err) {
         setError(err.message);
       }
@@ -43,9 +26,9 @@ const ArchivePage = () => {
   }, []);
 
   const toggleFilter = (filter) => {
-    setSelectedFilters(prev =>
+    setSelectedFilters((prev) =>
       prev.includes(filter)
-        ? prev.filter(f => f !== filter)
+        ? prev.filter((f) => f !== filter)
         : [...prev, filter]
     );
   };
@@ -59,24 +42,32 @@ const ArchivePage = () => {
       // Replace with actual API call
       console.log(`Restoring user ${userId}`);
       // After successful restore, remove from archived list
-      setArchivedUsers(prev => prev.filter(user => user._id !== userId));
+      setArchivedUsers((prev) => prev.filter((user) => user._id !== userId));
     } catch (err) {
       setError(err.message);
     }
   };
 
-  const filteredUsers = archivedUsers.filter(user => {
-    const matchesSearch = user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  const filteredUsers = archivedUsers.filter((user) => {
+    const matchesSearch =
+      user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesFilter = selectedFilters.length === 0 ||
-      selectedFilters.includes(user.userType.charAt(0).toUpperCase() + user.userType.slice(1));
-    
+
+    const matchesFilter =
+      selectedFilters.length === 0 ||
+      selectedFilters.includes(
+        user.userType.charAt(0).toUpperCase() + user.userType.slice(1)
+      );
+
     return matchesSearch && matchesFilter;
   });
 
   if (error) {
-    return <div className="text-red-500 p-4" role="alert">{error}</div>;
+    return (
+      <div className="text-red-500 p-4" role="alert">
+        {error}
+      </div>
+    );
   }
 
   return (
@@ -107,7 +98,10 @@ const ArchivePage = () => {
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-xl bg-purple-50">
-                  <Archive className="h-6 w-6 text-cyan-500" aria-hidden="true" />
+                  <Archive
+                    className="h-6 w-6 text-cyan-500"
+                    aria-hidden="true"
+                  />
                 </div>
                 <h2 className="text-xl font-semibold text-gray-800">
                   Archived Users
@@ -117,7 +111,10 @@ const ArchivePage = () => {
               <div className="flex items-center gap-4">
                 {/* Search Input */}
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" aria-hidden="true" />
+                  <Search
+                    className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"
+                    aria-hidden="true"
+                  />
                   <input
                     type="search"
                     placeholder="Search archived users..."
@@ -204,16 +201,29 @@ const ArchivePage = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">User</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Email</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">Type</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">Archived Date</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">Actions</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                      User
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                      Email
+                    </th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                      Type
+                    </th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                      Archived Date
+                    </th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredUsers.map((user) => (
-                    <tr key={user._id} className="border-b border-gray-100 hover:bg-gray-50/50">
+                    <tr
+                      key={user._id}
+                      className="border-b border-gray-100 hover:bg-gray-50/50"
+                    >
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center text-white font-medium">
@@ -227,7 +237,8 @@ const ArchivePage = () => {
                       <td className="px-4 py-4 text-gray-600">{user.email}</td>
                       <td className="px-4 py-4 text-center">
                         <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-cyan-500">
-                          {user.userType.charAt(0).toUpperCase() + user.userType.slice(1)}
+                          {user.userType.charAt(0).toUpperCase() +
+                            user.userType.slice(1)}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-center text-gray-600">
