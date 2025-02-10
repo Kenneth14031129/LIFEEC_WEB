@@ -206,13 +206,43 @@ const HealthUpdateModal = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Ensure medications are properly formatted
-    const submissionData = {
-      ...formData,
-      allMedications: formData.medications,
-    };
-    onSubmit(submissionData);
+
+    // Validate that new records can't be added for existing dates
+    if (isAddingNew) {
+      // Check if date already exists
+      const dateExists = healthRecords.some(
+        (record) => record.date === formData.date
+      );
+
+      if (dateExists) {
+        toast.error("A health record already exists for this date");
+        return;
+      }
+    }
+
+    // Rest of the submission logic remains the same
+    onSubmit(formData);
     onClose();
+  };
+
+  const handleDateChange = (e) => {
+    if (!isAddingNew) return; // Prevent date changes when updating
+
+    const selectedDate = new Date(e.target.value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Check if the selected date already has a record
+    const dateExists = healthRecords.some(
+      (record) => record.date === e.target.value
+    );
+
+    if (dateExists) {
+      toast.error("A health record already exists for this date");
+      return;
+    }
+
+    setFormData({ ...formData, date: e.target.value });
   };
 
   if (!isOpen) return null;
@@ -349,15 +379,15 @@ const HealthUpdateModal = ({
               <input
                 type="date"
                 value={formData.date}
-                onChange={(e) =>
-                  isAddingNew &&
-                  setFormData({ ...formData, date: e.target.value })
-                }
-                className={`w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${
-                  !isAddingNew ? "bg-gray-100 cursor-not-allowed" : ""
-                }`}
-                required
+                onChange={handleDateChange}
                 disabled={!isAddingNew}
+                className={`w-full rounded-lg border-gray-300 ${
+                  !isAddingNew
+                    ? "bg-gray-50 cursor-not-allowed"
+                    : "focus:border-blue-500 focus:ring-blue-500"
+                }`}
+                min={new Date().toISOString().split("T")[0]}
+                required
               />
             </div>
 

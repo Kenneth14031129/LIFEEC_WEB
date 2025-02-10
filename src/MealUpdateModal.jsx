@@ -104,7 +104,41 @@ const MealUpdateModal = ({
       return;
     }
 
+    // Add date validation for new records
+    if (isAddingNew) {
+      // Check if date already exists
+      const dateExists = mealRecords.some(
+        (record) => record.date === formData.date
+      );
+
+      if (dateExists) {
+        toast.error("A meal plan already exists for this date");
+        return;
+      }
+    }
+
     onSubmit(cleanedData);
+  };
+
+  // Add date change handler with validation
+  const handleDateChange = (e) => {
+    if (!isAddingNew) return; // Prevent date changes when updating
+
+    const selectedDate = new Date(e.target.value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Check if the selected date already has a record
+    const dateExists = mealRecords.some(
+      (record) => record.date === e.target.value
+    );
+
+    if (dateExists) {
+      toast.error("A meal plan already exists for this date");
+      return;
+    }
+
+    setFormData({ ...formData, date: e.target.value });
   };
 
   const renderMealSection = (mealType, label) => (
@@ -173,9 +207,7 @@ const MealUpdateModal = ({
               <input
                 type="date"
                 value={formData.date}
-                onChange={(e) =>
-                  setFormData({ ...formData, date: e.target.value })
-                }
+                onChange={handleDateChange} // Add this line to connect the handler
                 className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 required
               />
