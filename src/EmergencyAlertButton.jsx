@@ -104,6 +104,7 @@ const EmergencyAlertButton = ({ resident }) => {
               </li>
               <li className="flex items-center gap-2">• Nurses</li>
               <li className="flex items-center gap-2">• Owner</li>
+              <li className="flex items-center gap-2">• Admin</li>
             </ul>
 
             <div className="flex justify-end gap-3">

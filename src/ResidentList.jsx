@@ -3,9 +3,6 @@ import { useNavigate } from "react-router-dom";
 import {
   Search,
   Filter,
-  Download,
-  Printer,
-  Share2,
   MapPin,
   ArrowUpRight,
   User,
@@ -16,6 +13,7 @@ import {
 import { getResidents } from "../services/api";
 import Sidebar from "./SideBar";
 import EmergencyAlertButton from "./EmergencyAlertButton";
+import DownloadResidentsData from './DownloadResidentsData';
 
 const ResidentList = () => {
   const navigate = useNavigate();
@@ -228,15 +226,8 @@ const ResidentList = () => {
             </div>
 
             <div className="flex items-center gap-4">
-              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
-                <Download className="h-5 w-5" />
-              </button>
-              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
-                <Printer className="h-5 w-5" />
-              </button>
-              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
-                <Share2 className="h-5 w-5" />
-              </button>
+            <DownloadResidentsData residents={filteredResidents} />
+
               <div className="h-6 w-px bg-gray-200 mx-2"></div>
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
