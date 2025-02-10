@@ -11,15 +11,32 @@ import {
 
 const Sidebar = ({ activePage = "dashboard" }) => {
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const userType = user.userType?.toLowerCase();
 
-  const menuItems = [
-    { icon: Layout, label: "Dashboard", route: "/dashboard" },
-    { icon: UserPlus, label: "Add User", route: "/add-user" },
-    { icon: Users, label: "Residents List", route: "/residents-list" },
-    { icon: UserPlus, label: "Add Resident", route: "/add-resident" },
-    { icon: MessageCircle, label: "Messages", route: "/messages" },
-    { icon: Archive, label: "Archive", route: "/archive" },
-  ];
+  // Define menu items based on user role
+  const getMenuItems = () => {
+    const baseMenuItems = [
+      { icon: Layout, label: "Dashboard", route: "/dashboard" },
+      { icon: UserPlus, label: "Add User", route: "/add-user" },
+      { icon: Users, label: "Residents List", route: "/residents-list" },
+      { icon: UserPlus, label: "Add Resident", route: "/add-resident" },
+      { icon: Archive, label: "Archive", route: "/archive" },
+    ];
+
+    // Add Messages menu item only for admin
+    if (userType === "admin") {
+      baseMenuItems.splice(4, 0, {
+        icon: MessageCircle,
+        label: "Messages",
+        route: "/messages",
+      });
+    }
+
+    return baseMenuItems;
+  };
+
+  const menuItems = getMenuItems();
 
   return (
     <div className="fixed left-0 top-0 h-full w-72 bg-gradient-to-b from-gray-900 to-gray-800 shadow-lg font-poppins">
@@ -66,7 +83,10 @@ const Sidebar = ({ activePage = "dashboard" }) => {
       </div>
 
       <button
-        onClick={() => navigate("/login")}
+        onClick={() => {
+          localStorage.clear(); // Clear all localStorage data
+          navigate("/login");
+        }}
         className="absolute bottom-8 left-6 right-6 flex items-center gap-3 px-4 py-3.5 text-gray-300 hover:bg-red-500/10 hover:text-red-400 rounded-xl transition-all"
       >
         <LogOut className="h-5 w-5" />
@@ -76,7 +96,6 @@ const Sidebar = ({ activePage = "dashboard" }) => {
   );
 };
 
-// Only keep PropTypes for type checking
 Sidebar.propTypes = {
   activePage: PropTypes.string,
 };

@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { ProtectedRoute, RoleBasedRoute } from "./ProtectedRoutes";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
 import AddResident from "./AddResident";
@@ -12,19 +13,6 @@ import ViewProfile from "./ViewProfile";
 import ResidentDetails from "./ResidentDetails";
 import ForgotPassword from "./ForgotPassword";
 import ArchivePage from "./ArchivePage";
-
-// Simple auth check - you might want to replace this with your actual auth logic
-const isAuthenticated = () => {
-  return localStorage.getItem("isAuthenticated") === "true";
-};
-
-// Protected Route component
-const ProtectedRoute = ({ children }) => {
-  if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />;
-  }
-  return children;
-};
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -58,17 +46,17 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route
           path="/add-user"
           element={
-            <ProtectedRoute>
+            <RoleBasedRoute allowedRoles={["admin", "owner"]}>
               <AddUser />
-            </ProtectedRoute>
+            </RoleBasedRoute>
           }
         />
         <Route
           path="/messages"
           element={
-            <ProtectedRoute>
+            <RoleBasedRoute allowedRoles={["admin"]}>
               <Messages />
-            </ProtectedRoute>
+            </RoleBasedRoute>
           }
         />
         <Route
@@ -95,12 +83,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/archive"
           element={
-            <ProtectedRoute>
+            <RoleBasedRoute allowedRoles={["admin", "owner"]}>
               <ArchivePage />
-            </ProtectedRoute>
+            </RoleBasedRoute>
           }
         />
         <Route path="/" element={<Navigate to="/login" replace />} />
