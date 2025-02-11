@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+// Use relative path in production, localhost in development
+const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:5000/api';
 
 // Create axios instance with default config
 const api = axios.create({
@@ -37,11 +38,20 @@ export const registerUser = async (userData) => {
 
 export const loginUser = async (email, password) => {
   try {
-    const { data } = await api.post('/users/login', { email, password });
-    localStorage.setItem('token', data.token);
-    return data;
+    const response = await api.post('/users/login', { email, password });
+    if (response && response.data) {
+      localStorage.setItem('token', response.data.token);
+      return response.data;
+    }
+    throw new Error('Invalid response from server');
   } catch (error) {
-    throw error.response.data;
+    if (error.response?.data) {
+      throw error.response.data;
+    } else if (error.request) {
+      throw { message: 'Network error. Please check your connection.' };
+    } else {
+      throw { message: 'Login failed. Please try again.' };
+    }
   }
 };
 
