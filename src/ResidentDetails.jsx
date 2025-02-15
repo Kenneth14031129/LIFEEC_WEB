@@ -16,6 +16,7 @@ import {
   Mail,
   PhoneCall,
   ChevronLeft,
+  X,
 } from "lucide-react";
 import Sidebar from "./SideBar";
 import HealthUpdateModal from "./HealthUpdateModal";
@@ -48,6 +49,7 @@ const ResidentDetails = () => {
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [isAddingNewMeal, setIsAddingNewMeal] = useState(false);
   const [isAddingNewActivity, setIsAddingNewActivity] = useState(false);
@@ -318,12 +320,17 @@ const ResidentDetails = () => {
   const handleHealthUpdate = async (newHealthRecord) => {
     try {
       let response;
-
+  
       if (isAddingNew) {
         // Create new record with medications array
         response = await createHealthRecord(id, newHealthRecord);
-        toast.success("Health record added successfully");
-
+        
+        // Set success message
+        setSuccessMessage("Health record added successfully!");
+        
+        // Clear message after 3 seconds
+        setTimeout(() => setSuccessMessage(null), 3000);
+  
         // Add the new record to the beginning of the array
         setHealthRecords((prevRecords) => [
           response.healthRecord,
@@ -334,20 +341,25 @@ const ResidentDetails = () => {
         const existingRecord = healthRecords.find(
           (record) => record.date === newHealthRecord.date
         );
-
+  
         if (!existingRecord) {
           toast.error("Could not find the record to update");
           return;
         }
-
+  
         // Update existing record
         response = await updateHealthRecord(
           id,
           existingRecord._id,
           newHealthRecord
         );
-        toast.success("Health record updated successfully");
-
+        
+        // Set success message for update
+        setSuccessMessage("Health record updated successfully!");
+        
+        // Clear message after 3 seconds
+        setTimeout(() => setSuccessMessage(null), 3000);
+  
         // Replace the updated record in the array
         setHealthRecords((prevRecords) =>
           prevRecords.map((record) =>
@@ -355,12 +367,11 @@ const ResidentDetails = () => {
           )
         );
       }
-
+  
       // Update the resident data to show the latest health record
       setResidentData((prev) => ({
         ...prev,
         health: {
-          ...prev.health,
           status: newHealthRecord.status,
           date: newHealthRecord.date,
           lastUpdated: "Just now",
@@ -381,7 +392,7 @@ const ResidentDetails = () => {
           instructions: newHealthRecord.instructions,
         },
       }));
-
+  
       setShowHealthModal(false);
     } catch (error) {
       console.error("Error managing health record:", error);
@@ -541,6 +552,19 @@ const ResidentDetails = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+       {successMessage && (
+      <div className="fixed top-4 right-4 z-50 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg shadow-lg flex items-center">
+        <div className="flex-grow">
+          <p className="text-sm font-medium">{successMessage}</p>
+        </div>
+        <button
+          onClick={() => setSuccessMessage(null)}
+          className="ml-4 text-green-700 hover:text-green-900"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+    )}
       <Sidebar activePage="residents-list" />
 
       <div className="ml-72 p-8">

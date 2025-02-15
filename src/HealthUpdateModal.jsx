@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Plus, Trash2 } from "lucide-react";
 import PropTypes from "prop-types";
+import toast from "react-hot-toast";
 
 const HealthUpdateModal = ({
   isOpen,
@@ -228,7 +229,6 @@ const HealthUpdateModal = ({
   const handleDateChange = (e) => {
     if (!isAddingNew) return; // Prevent date changes when updating
 
-    const selectedDate = new Date(e.target.value);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
