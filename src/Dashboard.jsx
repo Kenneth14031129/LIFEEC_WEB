@@ -44,15 +44,15 @@ const Dashboard = () => {
   // Filter notifications to only show last 24 hours
   const getRecentNotifications = (alerts) => {
     return alerts
-      .filter(alert => isWithin24Hours(alert.timestamp))
-      .map(alert => ({
+      .filter((alert) => isWithin24Hours(alert.timestamp))
+      .map((alert) => ({
         id: alert._id,
         resident: alert.residentName,
         type: "emergency",
         message: alert.message,
         time: formatTimestamp(alert.timestamp),
         read: alert.read || false,
-        timestamp: alert.timestamp // Keep the original timestamp for filtering
+        timestamp: alert.timestamp, // Keep the original timestamp for filtering
       }))
       .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   };
@@ -143,7 +143,6 @@ const Dashboard = () => {
 
       // Update notifications with only last 24 hours alerts using getRecentNotifications
       setNotifications(getRecentNotifications(alerts));
-      
     } catch (error) {
       console.error("Error fetching alerts:", error);
       setAllAlerts([]);
@@ -416,7 +415,13 @@ const Dashboard = () => {
                       stroke="rgba(255,255,255,0.2)"
                     />
                     <XAxis dataKey="month" axisLine={false} tickLine={false} />
-                    <YAxis axisLine={false} tickLine={false} />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      allowDecimals={false}
+                      domain={[0, "auto"]}
+                      tickCount={10}
+                    />
                     <Tooltip
                       contentStyle={{
                         background: "rgba(255,255,255,0.9)",
