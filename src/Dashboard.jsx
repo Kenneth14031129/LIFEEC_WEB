@@ -29,6 +29,9 @@ const Dashboard = () => {
   const [allAlerts, setAllAlerts] = useState([]);
   const [totalResidents, setTotalResidents] = useState([0]);
   const [monthlyStats, setMonthlyStats] = useState([]);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [availableYears, setAvailableYears] = useState([]);
+
   const [userData, setUserData] = useState({
     fullName: "",
     userType: "",
@@ -79,6 +82,14 @@ const Dashboard = () => {
     loadUserData();
   }, [navigate]);
 
+  // Add this useEffect
+  useEffect(() => {
+    if (allAlerts.length > 0) {
+      const monthlyData = processMonthlyStats(allAlerts);
+      setMonthlyStats(monthlyData);
+    }
+  }, [selectedYear, allAlerts]);
+
   const processMonthlyStats = (alerts) => {
     const months = {
       Jan: { month: "Jan", alerts: 0 },
@@ -95,14 +106,26 @@ const Dashboard = () => {
       Dec: { month: "Dec", alerts: 0 },
     };
 
-    // Process alerts by month
-    alerts.forEach((alert) => {
-      const date = new Date(alert.timestamp);
-      const monthName = date.toLocaleString("en-US", { month: "short" });
-      if (months[monthName]) {
-        months[monthName].alerts++;
-      }
-    });
+    // Calculate available years
+    const years = [
+      ...new Set(
+        alerts.map((alert) => new Date(alert.timestamp).getFullYear())
+      ),
+    ].sort((a, b) => b - a);
+    setAvailableYears(years);
+
+    // Filter alerts for selected year
+    alerts
+      .filter(
+        (alert) => new Date(alert.timestamp).getFullYear() === selectedYear
+      )
+      .forEach((alert) => {
+        const date = new Date(alert.timestamp);
+        const monthName = date.toLocaleString("en-US", { month: "short" });
+        if (months[monthName]) {
+          months[monthName].alerts++;
+        }
+      });
 
     return Object.values(months);
   };
@@ -391,79 +414,81 @@ const Dashboard = () => {
         </div>
 
         {/* Charts */}
-        <div className="grid grid-cols-1 gap-6">
-          <div className="rounded-xl bg-gradient-to-br from-white/80 to-white/60 shadow-lg">
-            <div className="p-6 border-b border-white/20">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-gray-800">
-                  Alert Statistics
-                </h3>
-                <select className="px-3 py-1.5 bg-white/80 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option>Last 12 months</option>
-                  <option>Last 6 months</option>
-                  <option>Last 3 months</option>
-                </select>
-              </div>
+        <div className="rounded-xl bg-gradient-to-br from-white/80 to-white/60 shadow-lg">
+          <div className="p-6 border-b border-white/20">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-gray-800">Alert Statistics</h3>
+              <select
+                className="px-3 py-1.5 bg-white/80 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              >
+                {availableYears.map((year) => (
+                  <option key={year} value={year}>
+                    Year {year}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="px-6 pb-6">
-              <div className="h-80 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={monthlyStats}>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                      stroke="rgba(255,255,255,0.2)"
-                    />
-                    <XAxis dataKey="month" axisLine={false} tickLine={false} />
-                    <YAxis axisLine={false} tickLine={false} tick={false} />
-                    <Tooltip
-                      contentStyle={{
-                        background: "rgba(255,255,255,0.9)",
-                        border: "none",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                      }}
-                    />
-                    <Bar
-                      dataKey="alerts"
-                      name="Alerts"
-                      fill="url(#redGradient)"
-                      radius={[4, 4, 0, 0]}
-                      minPointSize={5}
-                    />
-                    <defs>
-                      <linearGradient
-                        id="redGradient"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop offset="0%" stopColor="#06b6d4" />
-                        <stop offset="100%" stopColor="#2563eb" />
-                      </linearGradient>
-                    </defs>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+          </div>
+          <div className="px-6 pb-6">
+            <div className="h-80 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyStats}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="rgba(255,255,255,0.2)"
+                  />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} />
+                  <YAxis axisLine={false} tickLine={false} tick={false} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "rgba(255,255,255,0.9)",
+                      border: "none",
+                      borderRadius: "8px",
+                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                    }}
+                  />
+                  <Bar
+                    dataKey="alerts"
+                    name="Alerts"
+                    fill="url(#redGradient)"
+                    radius={[4, 4, 0, 0]}
+                    minPointSize={5}
+                  />
+                  <defs>
+                    <linearGradient
+                      id="redGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="0%" stopColor="#06b6d4" />
+                      <stop offset="100%" stopColor="#2563eb" />
+                    </linearGradient>
+                  </defs>
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </div>
-
-        {/* Modals */}
-        <ResidentHistory
-          isOpen={showResidentHistory}
-          onClose={() => setShowResidentHistory(false)}
-          residents={totalResidents}
-          isLoading={isLoading}
-        />
-        <AlertHistory
-          isOpen={showAlertHistory}
-          onClose={() => setShowAlertHistory(false)}
-          alerts={allAlerts}
-          isLoading={isLoading}
-        />
       </div>
+
+      {/* Modals */}
+      <ResidentHistory
+        isOpen={showResidentHistory}
+        onClose={() => setShowResidentHistory(false)}
+        residents={totalResidents}
+        isLoading={isLoading}
+      />
+      <AlertHistory
+        isOpen={showAlertHistory}
+        onClose={() => setShowAlertHistory(false)}
+        alerts={allAlerts}
+        isLoading={isLoading}
+      />
     </div>
   );
 };
