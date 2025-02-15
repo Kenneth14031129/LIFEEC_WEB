@@ -28,6 +28,7 @@ const AddUser = () => {
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
   const [userToArchive, setUserToArchive] = useState(null);
   const navigate = useNavigate();
+  const [successMessage, setSuccessMessage] = useState(null);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -89,6 +90,10 @@ const AddUser = () => {
         password: "",
         userType: "",
       });
+      // Show success message
+      setSuccessMessage("User added successfully!");
+      // Clear message after 3 seconds
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -146,6 +151,19 @@ const AddUser = () => {
 
   return (
     <div className="font-[Poppins]">
+      {successMessage && (
+        <div className="fixed top-4 right-4 z-50 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg shadow-lg flex items-center">
+          <div className="flex-grow">
+            <p className="text-sm font-medium">{successMessage}</p>
+          </div>
+          <button
+            onClick={() => setSuccessMessage(null)}
+            className="ml-4 text-green-700 hover:text-green-900"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      )}
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <Sidebar activePage="add-user" />
 
