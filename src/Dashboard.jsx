@@ -415,13 +415,7 @@ const Dashboard = () => {
                       stroke="rgba(255,255,255,0.2)"
                     />
                     <XAxis dataKey="month" axisLine={false} tickLine={false} />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      allowDecimals={false}
-                      domain={[0, "auto"]}
-                      tickCount={10}
-                    />
+                    <YAxis axisLine={false} tickLine={false} tick={false} />
                     <Tooltip
                       contentStyle={{
                         background: "rgba(255,255,255,0.9)",
