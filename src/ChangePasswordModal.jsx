@@ -53,17 +53,17 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
         newPassword: passwordForm.newPassword,
       });
 
-      // Reset form and show success message
+      // Reset form
       setPasswordForm({
         currentPassword: "",
         newPassword: "",
         confirmNewPassword: "",
       });
 
-      onSuccess("Your password has been successfully changed");
-      onClose();
+      // Call onSuccess with message
+      onSuccess("Password changed successfully");
+      // Remove the onClose() call here since it's now handled in the parent
     } catch (err) {
-      // Set a more user-friendly error message
       setError(err.message || "Failed to change password. Please try again.");
     }
   };

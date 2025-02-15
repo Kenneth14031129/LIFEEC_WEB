@@ -34,6 +34,7 @@ const ViewProfile = () => {
   const [updateError, setUpdateError] = useState(null);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordChangeMessage, setPasswordChangeMessage] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     fetchProfile();
@@ -120,6 +121,10 @@ const ViewProfile = () => {
       });
 
       setIsEditing(false);
+      // Add success message
+      setSuccessMessage("Profile updated successfully!");
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       console.error("Update error:", err);
       setUpdateError(err.message || "Failed to update profile");
@@ -349,18 +354,31 @@ const ViewProfile = () => {
                 setIsChangingPassword(false);
                 setPasswordChangeMessage(null);
               }}
-              onSuccess={(message) => setPasswordChangeMessage(message)}
+              onSuccess={(message) => {
+                setPasswordChangeMessage(message);
+                // Delay closing the modal slightly to ensure message is visible
+                setTimeout(() => {
+                  setIsChangingPassword(false);
+                }, 500); // Half second delay
+                // Clear message after 3 seconds
+                setTimeout(() => setPasswordChangeMessage(null), 3000);
+              }}
             />
           )}
 
-          {/* Success Message */}
-          {passwordChangeMessage && (
+          {/* Success Messages */}
+          {(successMessage || passwordChangeMessage) && (
             <div className="fixed top-4 right-4 z-50 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg shadow-lg flex items-center">
               <div className="flex-grow">
-                <p className="text-sm font-medium">{passwordChangeMessage}</p>
+                <p className="text-sm font-medium">
+                  {successMessage || passwordChangeMessage}
+                </p>
               </div>
               <button
-                onClick={() => setPasswordChangeMessage(null)}
+                onClick={() => {
+                  setSuccessMessage(null);
+                  setPasswordChangeMessage(null);
+                }}
                 className="ml-4 text-green-700 hover:text-green-900"
               >
                 <X className="h-5 w-5" />
