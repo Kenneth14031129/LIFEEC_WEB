@@ -475,7 +475,12 @@ const ResidentDetails = () => {
       if (isAddingNewActivity) {
         // Create new record
         response = await createActivitiesRecord(id, updatedActivities);
-        toast.success("New activity added successfully");
+
+        // Set success message
+        setSuccessMessage("Activity added successfully!");
+
+        // Clear message after 3 seconds
+        setTimeout(() => setSuccessMessage(null), 3000);
 
         const newActivity = {
           ...updatedActivities.activities[0],
@@ -504,7 +509,12 @@ const ResidentDetails = () => {
           existingActivity._id,
           updatedActivities
         );
-        toast.success("Activities updated successfully");
+
+        // Set success message
+        setSuccessMessage("Activity updated successfully!");
+
+        // Clear message after 3 seconds
+        setTimeout(() => setSuccessMessage(null), 3000);
 
         const updatedActivity = {
           ...updatedActivities.activities[0],

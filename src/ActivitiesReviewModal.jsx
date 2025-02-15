@@ -146,7 +146,6 @@ const ActivitiesReviewModal = ({ isOpen, onClose, activities }) => {
                   {activity.description && (
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-3">
-                        <Activity className="h-5 w-5 text-gray-500" />
                         <h3 className="font-semibold text-gray-900">
                           Description
                         </h3>
@@ -158,7 +157,6 @@ const ActivitiesReviewModal = ({ isOpen, onClose, activities }) => {
                   {activity.notes && (
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-3">
-                        <Activity className="h-5 w-5 text-gray-500" />
                         <h3 className="font-semibold text-gray-900">Notes</h3>
                       </div>
                       <p className="text-gray-600">{activity.notes}</p>
