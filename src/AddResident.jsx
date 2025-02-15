@@ -3,13 +3,10 @@ import {
   UserPlus,
   Phone,
   Mail,
-  User,
-  Heart,
-  UserCircle,
   CheckCircle,
   ChevronRight,
   MapPin,
-  Cake,
+  X,
 } from "lucide-react";
 import Sidebar from "./SideBar";
 import { addNewResident } from "../services/api";
@@ -30,7 +27,8 @@ const AddResident = () => {
 
   const [activeStep, setActiveStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
+  const [, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   const formatPhoneNumber = (value) => {
     // Remove all non-digit characters
@@ -95,7 +93,7 @@ const AddResident = () => {
       const response = await addNewResident(formData);
       // Handle success
       console.log("Resident added successfully:", response);
-      // Reset form or redirect
+      // Reset form
       setFormData({
         fullName: "",
         dateOfBirth: "",
@@ -108,6 +106,10 @@ const AddResident = () => {
         emergencyContactRelation: "",
       });
       setActiveStep(1);
+      // Show success message
+      setSuccessMessage("Resident added successfully!");
+      // Clear message after 3 seconds
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
       setError(error.message || "Error adding resident");
     } finally {
@@ -138,7 +140,20 @@ const AddResident = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-[Poppins]">
+      {successMessage && (
+        <div className="fixed top-4 right-4 z-50 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg shadow-lg flex items-center">
+          <div className="flex-grow">
+            <p className="text-sm font-medium">{successMessage}</p>
+          </div>
+          <button
+            onClick={() => setSuccessMessage(null)}
+            className="ml-4 text-green-700 hover:text-green-900"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      )}
       <Sidebar activePage="add-resident" />
 
       <div className="ml-72 p-8">
@@ -214,17 +229,14 @@ const AddResident = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Full Name
                     </label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <input
-                        type="text"
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter full name"
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter full name"
+                    />
                   </div>
 
                   {/* Date of Birth */}
@@ -232,16 +244,13 @@ const AddResident = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Date of Birth
                     </label>
-                    <div className="relative">
-                      <Cake className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <input
-                        type="date"
-                        name="dateOfBirth"
-                        value={formData.dateOfBirth}
-                        onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
+                    <input
+                      type="date"
+                      name="dateOfBirth"
+                      value={formData.dateOfBirth}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
                   </div>
 
                   {/* Gender */}
@@ -249,19 +258,16 @@ const AddResident = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Gender
                     </label>
-                    <div className="relative">
-                      <Heart className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <select
-                        name="gender"
-                        value={formData.gender}
-                        onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
-                      >
-                        <option value="">Select gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                      </select>
-                    </div>
+                    <select
+                      name="gender"
+                      value={formData.gender}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+                    >
+                      <option value="">Select gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
                   </div>
 
                   {/* Contact Number */}
@@ -327,34 +333,28 @@ const AddResident = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Emergency Contact Name
                     </label>
-                    <div className="relative">
-                      <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <input
-                        type="text"
-                        name="emergencyContactName"
-                        value={formData.emergencyContactName}
-                        onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter emergency contact name"
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      name="emergencyContactName"
+                      value={formData.emergencyContactName}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter emergency contact name"
+                    />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Relationship to Resident
                     </label>
-                    <div className="relative">
-                      <Heart className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <input
-                        type="text"
-                        name="emergencyContactRelation"
-                        value={formData.emergencyContactRelation}
-                        onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter relationship"
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      name="emergencyContactRelation"
+                      value={formData.emergencyContactRelation}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter relationship"
+                    />
                   </div>
 
                   {/* Emergency Contact Phone */}
