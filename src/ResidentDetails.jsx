@@ -320,17 +320,17 @@ const ResidentDetails = () => {
   const handleHealthUpdate = async (newHealthRecord) => {
     try {
       let response;
-  
+
       if (isAddingNew) {
         // Create new record with medications array
         response = await createHealthRecord(id, newHealthRecord);
-        
+
         // Set success message
         setSuccessMessage("Health record added successfully!");
-        
+
         // Clear message after 3 seconds
         setTimeout(() => setSuccessMessage(null), 3000);
-  
+
         // Add the new record to the beginning of the array
         setHealthRecords((prevRecords) => [
           response.healthRecord,
@@ -341,25 +341,25 @@ const ResidentDetails = () => {
         const existingRecord = healthRecords.find(
           (record) => record.date === newHealthRecord.date
         );
-  
+
         if (!existingRecord) {
           toast.error("Could not find the record to update");
           return;
         }
-  
+
         // Update existing record
         response = await updateHealthRecord(
           id,
           existingRecord._id,
           newHealthRecord
         );
-        
+
         // Set success message for update
         setSuccessMessage("Health record updated successfully!");
-        
+
         // Clear message after 3 seconds
         setTimeout(() => setSuccessMessage(null), 3000);
-  
+
         // Replace the updated record in the array
         setHealthRecords((prevRecords) =>
           prevRecords.map((record) =>
@@ -367,7 +367,7 @@ const ResidentDetails = () => {
           )
         );
       }
-  
+
       // Update the resident data to show the latest health record
       setResidentData((prev) => ({
         ...prev,
@@ -392,7 +392,7 @@ const ResidentDetails = () => {
           instructions: newHealthRecord.instructions,
         },
       }));
-  
+
       setShowHealthModal(false);
     } catch (error) {
       console.error("Error managing health record:", error);
@@ -409,7 +409,12 @@ const ResidentDetails = () => {
       if (isAddingNewMeal) {
         // Create new record
         response = await createMealRecord(id, updatedMeal);
-        toast.success("Meal plan added successfully");
+
+        // Set success message
+        setSuccessMessage("Meal plan added successfully!");
+
+        // Clear message after 3 seconds
+        setTimeout(() => setSuccessMessage(null), 3000);
 
         // Add new record to the array
         setMealRecords((prevRecords) => [response.mealRecord, ...prevRecords]);
@@ -426,7 +431,12 @@ const ResidentDetails = () => {
 
         // Update existing record
         response = await updateMealRecord(id, existingRecord._id, updatedMeal);
-        toast.success("Meal plan updated successfully");
+
+        // Set success message
+        setSuccessMessage("Meal plan updated successfully!");
+
+        // Clear message after 3 seconds
+        setTimeout(() => setSuccessMessage(null), 3000);
 
         // Update the record in the array
         setMealRecords((prevRecords) =>
@@ -552,19 +562,19 @@ const ResidentDetails = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-       {successMessage && (
-      <div className="fixed top-4 right-4 z-50 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg shadow-lg flex items-center">
-        <div className="flex-grow">
-          <p className="text-sm font-medium">{successMessage}</p>
+      {successMessage && (
+        <div className="fixed top-4 right-4 z-50 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg shadow-lg flex items-center">
+          <div className="flex-grow">
+            <p className="text-sm font-medium">{successMessage}</p>
+          </div>
+          <button
+            onClick={() => setSuccessMessage(null)}
+            className="ml-4 text-green-700 hover:text-green-900"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
-        <button
-          onClick={() => setSuccessMessage(null)}
-          className="ml-4 text-green-700 hover:text-green-900"
-        >
-          <X className="h-5 w-5" />
-        </button>
-      </div>
-    )}
+      )}
       <Sidebar activePage="residents-list" />
 
       <div className="ml-72 p-8">

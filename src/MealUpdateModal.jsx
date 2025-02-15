@@ -124,7 +124,6 @@ const MealUpdateModal = ({
   const handleDateChange = (e) => {
     if (!isAddingNew) return; // Prevent date changes when updating
 
-    const selectedDate = new Date(e.target.value);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
