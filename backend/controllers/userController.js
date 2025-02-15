@@ -11,6 +11,94 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+//Forgot Password
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "No user found with this email" });
+    }
+
+    // Generate OTP
+    const otp = generateOTP();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+
+    // Save OTP to user
+    user.otp = otp;
+    user.otpExpiry = otpExpiry;
+    await user.save();
+
+    // Send OTP email
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'LIFEEC Password Reset OTP',
+      html: `
+        <h1>Password Reset Request</h1>
+        <p>Your OTP for password reset is: <strong>${otp}</strong></p>
+        <p>This OTP will expire in 10 minutes.</p>
+        <p>If you didn't request this, please ignore this email.</p>
+      `
+    });
+
+    res.json({ message: "Password reset OTP sent to email" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const verifyResetOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.otp || !user.otpExpiry) {
+      return res.status(400).json({ message: "No OTP found for this user" });
+    }
+
+    if (Date.now() > user.otpExpiry) {
+      return res.status(400).json({ message: "OTP has expired" });
+    }
+
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    // Generate a temporary token for password reset
+    const token = generateToken(user._id, '10m'); // Token valid for 10 minutes
+
+    res.json({ token });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.password = newPassword;
+    user.otp = null;
+    user.otpExpiry = null;
+    await user.save();
+
+    res.json({ message: "Password reset successful" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Login user
 export const loginUser = async (req, res) => {
   try {

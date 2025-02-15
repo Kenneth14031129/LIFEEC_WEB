@@ -77,6 +77,37 @@ export const getResidents = async () => {
   }
 };
 
+//Forgot Password
+export const requestPasswordReset = async (email) => {
+  try {
+    const { data } = await api.post('/users/forgot-password', { email });
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error requesting password reset' };
+  }
+};
+
+export const verifyResetOTP = async (email, otp) => {
+  try {
+    const { data } = await api.post('/users/verify-reset-otp', { email, otp });
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+    }
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error verifying OTP' };
+  }
+};
+
+export const resetPassword = async (newPassword) => {
+  try {
+    const { data } = await api.post('/users/reset-password', { newPassword });
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error resetting password' };
+  }
+};
+
 //Add Resident
 export const addNewResident = async (residentData) => {
   try {

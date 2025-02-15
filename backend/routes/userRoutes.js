@@ -12,6 +12,9 @@ import {
   getArchivedUsers,
   restoreUser,
   verifyOTP,
+  forgotPassword,
+  verifyResetOTP,
+  resetPassword,
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -30,5 +33,8 @@ router.put("/:id/archive", protect, archiveUser);
 router.get("/archived", protect, getArchivedUsers);
 router.put("/:id/restore", protect, restoreUser);
 router.post("/verify-otp", verifyOTP);
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-reset-otp", verifyResetOTP);
+router.post("/reset-password", protect, resetPassword);
 
 export default router;

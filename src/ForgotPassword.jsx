@@ -11,6 +11,11 @@ import {
   AlertCircle,
 } from "lucide-react";
 import HealthLogo from "./assets/Health.svg";
+import {
+  requestPasswordReset,
+  verifyResetOTP,
+  resetPassword,
+} from "../services/api";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -28,11 +33,14 @@ const ForgotPassword = () => {
     setLoading(true);
     setError("");
 
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await requestPasswordReset(email);
       setStep(2);
-    }, 1500);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleVerificationSubmit = async (e) => {
@@ -40,11 +48,14 @@ const ForgotPassword = () => {
     setLoading(true);
     setError("");
 
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await verifyResetOTP(email, verificationCode);
       setStep(3);
-    }, 1500);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePasswordReset = async (e) => {
@@ -58,11 +69,29 @@ const ForgotPassword = () => {
       return;
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await resetPassword(newPassword);
       setStep(4);
-    }, 1500);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      await requestPasswordReset(email);
+      // Optionally show a success message
+      setError("Verification code resent successfully!");
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const steps = [
@@ -99,7 +128,7 @@ const ForgotPassword = () => {
           {step < 4 && (
             <div className="mb-8">
               <div className="flex items-center justify-between relative">
-                {steps.map((s, index) => (
+                {steps.map((s) => (
                   <div
                     key={s.number}
                     className="flex flex-col items-center relative z-10"
@@ -229,6 +258,8 @@ const ForgotPassword = () => {
                 <div className="text-center">
                   <button
                     type="button"
+                    onClick={handleResendCode}
+                    disabled={loading}
                     className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                   >
                     Resend Code
