@@ -3,7 +3,6 @@ import {
   Mail,
   Phone,
   MapPin,
-  Camera,
   Edit,
   Key,
   ChevronRight,
@@ -70,23 +69,52 @@ const ViewProfile = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    if (name === "phone") {
+      // Remove any non-digit characters except '+'
+      let phoneNumber = value.replace(/[^\d+]/g, "");
+
+      // Ensure it starts with +63
+      if (!phoneNumber.startsWith("+63")) {
+        if (phoneNumber.startsWith("63")) {
+          phoneNumber = "+" + phoneNumber;
+        } else if (phoneNumber.startsWith("0")) {
+          phoneNumber = "+63" + phoneNumber.substring(1);
+        } else if (!phoneNumber.startsWith("+")) {
+          phoneNumber = "+63" + phoneNumber;
+        }
+      }
+
+      // Update the form with formatted phone number
+      setEditForm((prev) => ({
+        ...prev,
+        phone: phoneNumber,
+      }));
+    } else {
+      setEditForm((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate phone number
+    if (editForm.phone !== "N/A" && !editForm.phone.startsWith("+63")) {
+      setUpdateError("Phone number must start with +63");
+      return;
+    }
+
     try {
       setUpdateError(null);
       await updateProfile(editForm);
 
-      // Update UI immediately with form data
       setProfileData({
         fullName: editForm.fullName,
         email: editForm.email,
-        role: profileData.role, // Keep existing role
+        role: profileData.role,
         phone: editForm.phone,
         location: editForm.location,
       });
@@ -185,8 +213,12 @@ const ViewProfile = () => {
                     name="phone"
                     value={editForm.phone}
                     onChange={handleInputChange}
+                    placeholder="+63 Phone Number"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
+                  <p className="mt-1 text-sm text-gray-500">
+                    Must start with +63
+                  </p>
                 </div>
 
                 <div>
@@ -257,11 +289,7 @@ const ViewProfile = () => {
           <div className="col-span-12 lg:col-span-5">
             <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 overflow-hidden">
               {/* Profile Header */}
-              <div className="relative h-40 bg-gradient-to-r from-cyan-500 to-blue-600">
-                <button className="absolute top-4 right-4 p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm">
-                  <Camera className="h-5 w-5 text-white" />
-                </button>
-              </div>
+              <div className="relative h-40 bg-gradient-to-r from-cyan-500 to-blue-600"></div>
 
               <div className="relative px-6 pb-6">
                 <div className="absolute -top-16 left-6">
