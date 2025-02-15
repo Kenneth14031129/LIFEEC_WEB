@@ -34,6 +34,29 @@ const Dashboard = () => {
     userType: "",
   });
 
+  const isWithin24Hours = (timestamp) => {
+    const now = new Date();
+    const alertTime = new Date(timestamp);
+    const diffInHours = (now - alertTime) / (1000 * 60 * 60);
+    return diffInHours <= 24;
+  };
+
+  // Filter notifications to only show last 24 hours
+  const getRecentNotifications = (alerts) => {
+    return alerts
+      .filter(alert => isWithin24Hours(alert.timestamp))
+      .map(alert => ({
+        id: alert._id,
+        resident: alert.residentName,
+        type: "emergency",
+        message: alert.message,
+        time: formatTimestamp(alert.timestamp),
+        read: alert.read || false,
+        timestamp: alert.timestamp // Keep the original timestamp for filtering
+      }))
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  };
+
   useEffect(() => {
     const loadUserData = () => {
       const storedUser = localStorage.getItem("user");
@@ -89,7 +112,6 @@ const Dashboard = () => {
       setIsLoading(true);
       const response = await getResidents();
 
-      // Get residents data array
       let residentsData = Array.isArray(response)
         ? response
         : response.data && Array.isArray(response.data)
@@ -115,21 +137,13 @@ const Dashboard = () => {
 
       setAllAlerts(alerts);
 
-      // Update monthly statistics with alerts only
+      // Update monthly statistics with all alerts
       const monthlyData = processMonthlyStats(alerts);
       setMonthlyStats(monthlyData);
 
-      // Update notifications
-      setNotifications(
-        alerts.map((alert) => ({
-          id: alert._id,
-          resident: alert.residentName,
-          type: "emergency",
-          message: alert.message,
-          time: formatTimestamp(alert.timestamp),
-          read: alert.read || false,
-        }))
-      );
+      // Update notifications with only last 24 hours alerts using getRecentNotifications
+      setNotifications(getRecentNotifications(alerts));
+      
     } catch (error) {
       console.error("Error fetching alerts:", error);
       setAllAlerts([]);
