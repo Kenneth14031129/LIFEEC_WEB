@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getUsers, addUser, archiveUser } from "../services/api";
+import { getUsers, addUser, archiveUser, verifyOTP } from "../services/api";
 import {
   UserPlus,
   Mail,
@@ -29,6 +29,11 @@ const AddUser = () => {
   const [userToArchive, setUserToArchive] = useState(null);
   const navigate = useNavigate();
   const [successMessage, setSuccessMessage] = useState(null);
+  const [showOTPVerification, setShowOTPVerification] = useState(false);
+  const [otpData, setOTPData] = useState({
+    email: "",
+    otp: "",
+  });
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -37,7 +42,7 @@ const AddUser = () => {
     userType: "",
   });
 
-  const filterOptions = ["Admin", "Owner", "Nurse", "Nutritionist", "Relative"];
+  const filterOptions = ["Nurse", "Nutritionist", "Relative"];
 
   const handleArchive = async (user) => {
     setUserToArchive(user);
@@ -82,18 +87,44 @@ const AddUser = () => {
     e.preventDefault();
     try {
       setIsSubmitting(true);
-      const newUser = await addUser(formData);
-      setUsers((prevUsers) => [...prevUsers, newUser]);
+      const response = await addUser(formData);
+
+      // Check if the user requires verification (admin/owner)
+      if (response.requiresVerification) {
+        setOTPData({ email: formData.email, otp: "" });
+        setShowOTPVerification(true);
+      } else {
+        // For other user types
+        setUsers((prevUsers) => [...prevUsers, response]);
+        setFormData({
+          fullName: "",
+          email: "",
+          password: "",
+          userType: "",
+        });
+        setSuccessMessage("User added successfully!");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    try {
+      setIsSubmitting(true);
+      const response = await verifyOTP(otpData);
+      setUsers((prevUsers) => [...prevUsers, response]);
+      setShowOTPVerification(false);
+      setSuccessMessage("User added and verified successfully!");
       setFormData({
         fullName: "",
         email: "",
         password: "",
         userType: "",
       });
-      // Show success message
-      setSuccessMessage("User added successfully!");
-      // Clear message after 3 seconds
-      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -114,6 +145,12 @@ const AddUser = () => {
   };
 
   const filteredUsers = users.filter((user) => {
+    // First check if the user is not an admin or owner
+    const isRegularUser = !["admin", "owner"].includes(
+      user.userType.toLowerCase()
+    );
+
+    // Then apply search and filter logic only to regular users
     const matchesSearch =
       user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase());
@@ -124,7 +161,7 @@ const AddUser = () => {
         user.userType.charAt(0).toUpperCase() + user.userType.slice(1)
       );
 
-    return matchesSearch && matchesFilter;
+    return isRegularUser && matchesSearch && matchesFilter;
   });
 
   if (isSubmitting) {
@@ -316,6 +353,8 @@ const AddUser = () => {
                         className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50/50 appearance-none"
                       >
                         <option value="">Select user type</option>
+                        <option value="admin">Admin</option>
+                        <option value="owner">Owner</option>
                         <option value="nurse">Nurse</option>
                         <option value="nutritionist">Nutritionist</option>
                         <option value="relative">Relative</option>
@@ -583,6 +622,44 @@ const AddUser = () => {
                 Archive User
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* OTP Verification Dialog */}
+      {showOTPVerification && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+            <h3 className="text-2xl font-bold mb-6 text-gray-800">
+              Verify Account
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Please enter the verification code sent to {otpData.email}
+            </p>
+
+            <form onSubmit={handleVerifyOTP} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Verification Code
+                </label>
+                <input
+                  type="text"
+                  value={otpData.otp}
+                  onChange={(e) =>
+                    setOTPData({ ...otpData, otp: e.target.value })
+                  }
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-3 px-4 rounded-xl text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? "Verifying..." : "Verify Code"}
+              </button>
+            </form>
           </div>
         </div>
       )}
