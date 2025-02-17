@@ -46,6 +46,11 @@ const AddUser = () => {
   const [successMessage, setSuccessMessage] = useState(null);
   const [showOTPVerification, setShowOTPVerification] = useState(false);
   const [otpData, setOTPData] = useState({ email: "", otp: "" });
+  const [errors, setErrors] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+  });
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -61,20 +66,22 @@ const AddUser = () => {
       try {
         const data = await getUsers();
         // Only show regular users in pending and registered lists
-        const regularUsers = data.filter(user => 
-          ["nurse", "nutritionist", "relative"].includes(user.userType.toLowerCase())
+        const regularUsers = data.filter((user) =>
+          ["nurse", "nutritionist", "relative"].includes(
+            user.userType.toLowerCase()
+          )
         );
-        
-        const active = regularUsers.filter(user => user.isVerified);
-        const pending = regularUsers.filter(user => !user.isVerified);
-        
+
+        const active = regularUsers.filter((user) => user.isVerified);
+        const pending = regularUsers.filter((user) => !user.isVerified);
+
         setUsers(active);
         setPendingUsers(pending);
       } catch (err) {
         setError(err.message);
       }
     };
-  
+
     fetchUsers();
   }, []);
 
@@ -142,11 +149,65 @@ const AddUser = () => {
     }
   };
 
+  // Validation rules
+  const validateFullName = (name) => {
+    if (!name) return "Full name is required";
+    if (name.length < 2) return "Full name must be at least 2 characters";
+    if (name.length > 50) return "Full name must be less than 50 characters";
+    if (!/^[a-zA-Z\s]*$/.test(name))
+      return "Full name can only contain letters and spaces";
+    return "";
+  };
+
+  const validateEmail = (email) => {
+    if (!email) return "Email is required";
+    // Regex that only allows .com top-level domain
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.com$/i;
+    if (!emailRegex.test(email))
+      return "Please enter a valid email address ending in .com (e.g., user@example.com)";
+    return "";
+  };
+
+  const validatePassword = (password) => {
+    if (!password) return "Password is required";
+    if (password.length < 8) return "Password must be at least 8 characters";
+    if (!/[A-Z]/.test(password))
+      return "Password must contain at least one uppercase letter";
+    if (!/[a-z]/.test(password))
+      return "Password must contain at least one lowercase letter";
+    if (!/[0-9]/.test(password))
+      return "Password must contain at least one number";
+    if (!/[_!@#$%^&*]/.test(password))
+      return "Password must contain at least one special character (_!@#$%^&*)";
+    return "";
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+    }));
+
+    // Real-time validation
+    let error = "";
+    switch (name) {
+      case "fullName":
+        error = validateFullName(value);
+        break;
+      case "email":
+        error = validateEmail(value);
+        break;
+      case "password":
+        error = validatePassword(value);
+        break;
+      default:
+        break;
+    }
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: error,
     }));
   };
 
@@ -155,17 +216,19 @@ const AddUser = () => {
     try {
       setIsSubmitting(true);
       const response = await addUser(formData);
-  
+
       // Check user type to determine flow
-      const isAdminOrOwner = ["admin", "owner"].includes(formData.userType.toLowerCase());
-  
+      const isAdminOrOwner = ["admin", "owner"].includes(
+        formData.userType.toLowerCase()
+      );
+
       if (isAdminOrOwner) {
         // Admin/Owner flow - Use OTP verification
         setOTPData({ email: formData.email, otp: "" });
         setShowOTPVerification(true);
       } else {
         // Nurse/Nutritionist/Relative flow - Add to pending
-        setPendingUsers(prev => [...prev, response]);
+        setPendingUsers((prev) => [...prev, response]);
         setFormData({
           fullName: "",
           email: "",
@@ -329,10 +392,19 @@ const AddUser = () => {
                         required
                         value={formData.fullName}
                         onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50/50"
+                        className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
+                          errors.fullName
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-gray-200 focus:ring-blue-500"
+                        } focus:outline-none focus:ring-2 bg-gray-50/50`}
                         placeholder="Enter full name"
                       />
                     </div>
+                    {errors.fullName && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {errors.fullName}
+                      </p>
+                    )}
                   </div>
 
                   {/* Email */}
@@ -355,10 +427,19 @@ const AddUser = () => {
                         required
                         value={formData.email}
                         onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50/50"
+                        className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
+                          errors.email
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-gray-200 focus:ring-blue-500"
+                        } focus:outline-none focus:ring-2 bg-gray-50/50`}
                         placeholder="Enter email address"
                       />
                     </div>
+                    {errors.email && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {errors.email}
+                      </p>
+                    )}
                   </div>
 
                   {/* Password */}
@@ -381,7 +462,11 @@ const AddUser = () => {
                         required
                         value={formData.password}
                         onChange={handleInputChange}
-                        className="w-full pl-10 pr-12 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50/50"
+                        className={`w-full pl-10 pr-12 py-3 rounded-xl border ${
+                          errors.password
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-gray-200 focus:ring-blue-500"
+                        } focus:outline-none focus:ring-2 bg-gray-50/50`}
                         placeholder="Enter password"
                       />
                       <button
@@ -399,6 +484,11 @@ const AddUser = () => {
                         )}
                       </button>
                     </div>
+                    {errors.password && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {errors.password}
+                      </p>
+                    )}
                   </div>
 
                   {/* User Type */}
@@ -434,8 +524,13 @@ const AddUser = () => {
 
                   <button
                     type="submit"
-                    disabled={isSubmitting}
-                    className="w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                    disabled={
+                      isSubmitting ||
+                      errors.email ||
+                      errors.fullName ||
+                      errors.password
+                    }
+                    className="w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
