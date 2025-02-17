@@ -186,9 +186,9 @@ const Login = () => {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
                       <Eye className="h-5 w-5" />
+                    ) : (
+                      <EyeOff className="h-5 w-5" />
                     )}
                   </button>
                 </div>
@@ -294,9 +294,9 @@ const Login = () => {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
                       <Eye className="h-5 w-5" />
+                    ) : (
+                      <EyeOff className="h-5 w-5" />
                     )}
                   </button>
                 </div>
@@ -356,12 +356,6 @@ const Login = () => {
                   <p className="mb-8 text-lg text-blue-100">
                     Professional Elderly Care System
                   </p>
-                  <button
-                    onClick={() => setIsLogin(false)}
-                    className="py-3 px-8 rounded-xl border-2 border-white text-white hover:bg-white hover:text-blue-600 transition-all duration-200 font-medium"
-                  >
-                    Sign Up
-                  </button>
                 </>
               ) : (
                 <>
