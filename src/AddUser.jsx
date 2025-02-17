@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getUsers, addUser, archiveUser, verifyOTP } from "../services/api";
+import {
+  getUsers,
+  addUser,
+  archiveUser,
+  verifyOTP,
+  verifyUser,
+  rejectUser,
+} from "../services/api";
 import {
   UserPlus,
   Mail,
@@ -14,6 +21,10 @@ import {
   User,
   Users,
   X,
+  CheckCircle,
+  XCircle,
+  Clock,
+  AlertCircle,
 } from "lucide-react";
 import Sidebar from "./SideBar";
 
@@ -21,19 +32,20 @@ const AddUser = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [users, setUsers] = useState([]);
+  const [pendingUsers, setPendingUsers] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
   const [userToArchive, setUserToArchive] = useState(null);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
   const navigate = useNavigate();
   const [successMessage, setSuccessMessage] = useState(null);
   const [showOTPVerification, setShowOTPVerification] = useState(false);
-  const [otpData, setOTPData] = useState({
-    email: "",
-    otp: "",
-  });
+  const [otpData, setOTPData] = useState({ email: "", otp: "" });
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -43,6 +55,74 @@ const AddUser = () => {
   });
 
   const filterOptions = ["Nurse", "Nutritionist", "Relative"];
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const data = await getUsers();
+        // Only show regular users in pending and registered lists
+        const regularUsers = data.filter(user => 
+          ["nurse", "nutritionist", "relative"].includes(user.userType.toLowerCase())
+        );
+        
+        const active = regularUsers.filter(user => user.isVerified);
+        const pending = regularUsers.filter(user => !user.isVerified);
+        
+        setUsers(active);
+        setPendingUsers(pending);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+  
+    fetchUsers();
+  }, []);
+
+  const showConfirmDialog = (user, action) => {
+    setSelectedUser(user);
+    setConfirmAction(action);
+    setIsConfirmDialogOpen(true);
+  };
+
+  const handleVerifyUser = async (user) => {
+    showConfirmDialog(user, "verify");
+  };
+
+  const handleRejectUser = async (user) => {
+    showConfirmDialog(user, "reject");
+  };
+
+  const handleConfirmAction = async () => {
+    try {
+      setIsSubmitting(true);
+      if (confirmAction === "verify") {
+        await verifyUser(selectedUser._id);
+        setSuccessMessage(
+          `${selectedUser.fullName} has been verified successfully!`
+        );
+      } else if (confirmAction === "reject") {
+        await rejectUser(selectedUser._id);
+        setSuccessMessage(
+          `${selectedUser.fullName}'s registration has been rejected.`
+        );
+      }
+
+      // Update the lists
+      setPendingUsers((prev) =>
+        prev.filter((user) => user._id !== selectedUser._id)
+      );
+      if (confirmAction === "verify") {
+        setUsers((prev) => [...prev, { ...selectedUser, isVerified: true }]);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsSubmitting(false);
+      setIsConfirmDialogOpen(false);
+      setSelectedUser(null);
+      setConfirmAction(null);
+    }
+  };
 
   const handleArchive = async (user) => {
     setUserToArchive(user);
@@ -70,39 +150,29 @@ const AddUser = () => {
     }));
   };
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const data = await getUsers();
-        setUsers(data);
-      } catch (err) {
-        setError(err.message);
-      }
-    };
-
-    fetchUsers();
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setIsSubmitting(true);
       const response = await addUser(formData);
-
-      // Check if the user requires verification (admin/owner)
-      if (response.requiresVerification) {
+  
+      // Check user type to determine flow
+      const isAdminOrOwner = ["admin", "owner"].includes(formData.userType.toLowerCase());
+  
+      if (isAdminOrOwner) {
+        // Admin/Owner flow - Use OTP verification
         setOTPData({ email: formData.email, otp: "" });
         setShowOTPVerification(true);
       } else {
-        // For other user types
-        setUsers((prevUsers) => [...prevUsers, response]);
+        // Nurse/Nutritionist/Relative flow - Add to pending
+        setPendingUsers(prev => [...prev, response]);
         setFormData({
           fullName: "",
           email: "",
           password: "",
           userType: "",
         });
-        setSuccessMessage("User added successfully!");
+        setSuccessMessage("User added and waiting for approval!");
       }
     } catch (err) {
       setError(err.message);
@@ -378,8 +448,112 @@ const AddUser = () => {
               </div>
             </div>
 
-            {/* Registered Users */}
-            <div className="col-span-8">
+            {/* Users Sections */}
+            <div className="col-span-8 space-y-8">
+              {/* Pending Users Section */}
+              <div className="bg-white/90 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-gray-100">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-amber-50">
+                      <Clock
+                        className="h-6 w-6 text-amber-500"
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-800">
+                        Pending Users
+                      </h2>
+                    </div>
+                  </div>
+                  {pendingUsers.length > 0 && (
+                    <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+                      {pendingUsers.length} pending
+                    </span>
+                  )}
+                </div>
+
+                {pendingUsers.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                            User
+                          </th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                            Email
+                          </th>
+                          <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                            Type
+                          </th>
+                          <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pendingUsers.map((user) => (
+                          <tr
+                            key={user._id}
+                            className="border-b border-gray-100 hover:bg-gray-50/50"
+                          >
+                            <td className="px-4 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl flex items-center justify-center text-white font-medium">
+                                  {user.fullName.charAt(0)}
+                                </div>
+                                <span className="font-medium text-gray-900">
+                                  {user.fullName}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 text-gray-600">
+                              {user.email}
+                            </td>
+                            <td className="px-4 py-4 text-center">
+                              <span className="px-3 py-1 rounded-full text-sm font-medium bg-amber-50 text-amber-600">
+                                {user.userType.charAt(0).toUpperCase() +
+                                  user.userType.slice(1)}
+                              </span>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="flex items-center justify-center gap-2">
+                                <button
+                                  onClick={() => handleVerifyUser(user)}
+                                  className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                  aria-label={`Verify ${user.fullName}`}
+                                >
+                                  <CheckCircle
+                                    className="h-5 w-5"
+                                    aria-hidden="true"
+                                  />
+                                </button>
+                                <button
+                                  onClick={() => handleRejectUser(user)}
+                                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                  aria-label={`Reject ${user.fullName}`}
+                                >
+                                  <XCircle
+                                    className="h-5 w-5"
+                                    aria-hidden="true"
+                                  />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    No pending users to verify
+                  </div>
+                )}
+              </div>
+
+              {/* Registered Users */}
               <div className="bg-white/90 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-gray-100">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
@@ -598,6 +772,68 @@ const AddUser = () => {
           </div>
         </div>
       </div>
+      {/* Confirmation Dialog */}
+      {isConfirmDialogOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div
+                className={`p-2 rounded-xl ${
+                  confirmAction === "verify" ? "bg-green-50" : "bg-red-50"
+                }`}
+              >
+                {confirmAction === "verify" ? (
+                  <CheckCircle className="h-6 w-6 text-green-500" />
+                ) : (
+                  <AlertCircle className="h-6 w-6 text-red-500" />
+                )}
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {confirmAction === "verify" ? "Verify User" : "Reject User"}
+              </h3>
+            </div>
+
+            <p className="text-gray-600 mb-6">
+              {confirmAction === "verify"
+                ? `Are you sure you want to verify ${selectedUser?.fullName}? This will grant them access to the system.`
+                : `Are you sure you want to reject ${selectedUser?.fullName}? This action cannot be undone.`}
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setIsConfirmDialogOpen(false);
+                  setSelectedUser(null);
+                  setConfirmAction(null);
+                }}
+                className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmAction}
+                className={`px-4 py-2 text-white rounded-lg transition-colors ${
+                  confirmAction === "verify"
+                    ? "bg-green-500 hover:bg-green-600"
+                    : "bg-red-500 hover:bg-red-600"
+                }`}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    <span>Processing...</span>
+                  </div>
+                ) : confirmAction === "verify" ? (
+                  "Verify User"
+                ) : (
+                  "Reject User"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {isArchiveDialogOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">

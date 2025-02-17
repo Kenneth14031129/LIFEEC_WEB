@@ -269,6 +269,24 @@ export const addUser = async (userData) => {
   }
 };
 
+export const verifyUser = async (userId) => {
+  try {
+    const { data } = await api.put(`/users/${userId}/verify`);
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error verifying user' };
+  }
+};
+
+export const rejectUser = async (userId) => {
+  try {
+    const { data } = await api.put(`/users/${userId}/reject`);
+    return data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error rejecting user' };
+  }
+};
+
 //Emergency Alert
 export const createEmergencyAlert = async (alertData) => {
   try {

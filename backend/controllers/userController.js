@@ -1,14 +1,14 @@
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
-import nodemailer from 'nodemailer';
-import { generateOTP } from '../utils/otpUtils.js';
+import nodemailer from "nodemailer";
+import { generateOTP } from "../utils/otpUtils.js";
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
 //Forgot Password
@@ -34,13 +34,13 @@ export const forgotPassword = async (req, res) => {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
-      subject: 'LIFEEC Password Reset OTP',
+      subject: "LIFEEC Password Reset OTP",
       html: `
         <h1>Password Reset Request</h1>
         <p>Your OTP for password reset is: <strong>${otp}</strong></p>
         <p>This OTP will expire in 10 minutes.</p>
         <p>If you didn't request this, please ignore this email.</p>
-      `
+      `,
     });
 
     res.json({ message: "Password reset OTP sent to email" });
@@ -71,7 +71,7 @@ export const verifyResetOTP = async (req, res) => {
     }
 
     // Generate a temporary token for password reset
-    const token = generateToken(user._id, '10m'); // Token valid for 10 minutes
+    const token = generateToken(user._id, "10m"); // Token valid for 10 minutes
 
     res.json({ token });
   } catch (error) {
@@ -132,7 +132,7 @@ export const registerUser = async (req, res) => {
     const { fullName, email, password, userType } = req.body;
 
     // Check if user type requires verification
-    const requiresVerification = ['admin', 'owner'].includes(userType);
+    const requiresVerification = ["admin", "owner"].includes(userType);
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -150,12 +150,12 @@ export const registerUser = async (req, res) => {
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: email,
-        subject: 'LIFEEC Registration OTP',
+        subject: "LIFEEC Registration OTP",
         html: `
           <h1>Welcome to LIFEEC</h1>
           <p>Your OTP for registration is: <strong>${otp}</strong></p>
           <p>This OTP will expire in 10 minutes.</p>
-        `
+        `,
       });
     }
 
@@ -166,7 +166,7 @@ export const registerUser = async (req, res) => {
       userType,
       otp,
       otpExpiry,
-      isVerified: !requiresVerification // Set to true for non-admin/owner accounts
+      isVerified: !requiresVerification, // Set to true for non-admin/owner accounts
     });
 
     res.status(201).json({
@@ -175,7 +175,7 @@ export const registerUser = async (req, res) => {
       email: user.email,
       userType: user.userType,
       requiresVerification,
-      token: requiresVerification ? null : generateToken(user._id)
+      token: requiresVerification ? null : generateToken(user._id),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -217,7 +217,7 @@ export const verifyOTP = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       userType: user.userType,
-      token: generateToken(user._id)
+      token: generateToken(user._id),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -228,12 +228,20 @@ export const verifyOTP = async (req, res) => {
 export const getUsers = async (req, res) => {
   try {
     const users = await User.find({
-      $or: [
-        { isArchived: false },
-        { isArchived: { $exists: false } }, // Also get users where isArchived field doesn't exist
-      ],
+      $or: [{ isArchived: false }, { isArchived: { $exists: false } }],
     }).select("-password");
-    res.json(users);
+
+    // Sort users by verification status and creation date
+    const sortedUsers = users.sort((a, b) => {
+      // Sort by verification status first
+      if (a.isVerified !== b.isVerified) {
+        return a.isVerified ? 1 : -1;
+      }
+      // Then sort by creation date
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
+    res.json(sortedUsers);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -324,12 +332,41 @@ export const addUser = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
+    // Check if user type requires verification (admin/owner)
+    const requiresVerification = ["admin", "owner"].includes(
+      userType.toLowerCase()
+    );
+
+    let otp = null;
+    let otpExpiry = null;
+
+    if (requiresVerification) {
+      // Generate OTP for admin/owner
+      otp = generateOTP();
+      otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+
+      // Send OTP email
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "LIFEEC Registration OTP",
+        html: `
+          <h1>Welcome to LIFEEC</h1>
+          <p>Your OTP for registration is: <strong>${otp}</strong></p>
+          <p>This OTP will expire in 10 minutes.</p>
+        `,
+      });
+    }
+
     // Create new user
     const user = await User.create({
       fullName,
       email,
       password,
       userType,
+      otp,
+      otpExpiry,
+      isVerified: false
     });
 
     if (user) {
@@ -338,6 +375,7 @@ export const addUser = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         userType: user.userType,
+        requiresVerification,
       });
     }
   } catch (error) {
@@ -364,9 +402,9 @@ export const archiveUser = async (req, res) => {
 
 export const getArchivedUsers = async (req, res) => {
   try {
-    const users = await User.find({ 
-      isArchived: true 
-    }).select('-password');
+    const users = await User.find({
+      isArchived: true,
+    }).select("-password");
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -385,6 +423,95 @@ export const restoreUser = async (req, res) => {
     await user.save();
 
     res.json({ message: "User restored successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const verifyUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the user is already verified
+    if (user.isVerified) {
+      return res.status(400).json({ message: "User is already verified" });
+    }
+
+    user.isVerified = true;
+    await user.save();
+
+    // Send confirmation email to user
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: "LIFEEC Account Verified",
+      html: `
+        <h1>Welcome to LIFEEC!</h1>
+        <p>Your account has been verified successfully.</p>
+        <p>You can now log in to your account using your email and password.</p>
+      `,
+    });
+
+    res.json({
+      message: "User verified successfully",
+      user: {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        userType: user.userType,
+        isVerified: user.isVerified,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const rejectUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Store user email before deletion for notification
+    const userEmail = user.email;
+
+    // Delete the user
+    await User.deleteOne({ _id: req.params.id });
+
+    // Send rejection email
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: userEmail,
+      subject: "LIFEEC Account Registration Status",
+      html: `
+        <h1>Account Registration Update</h1>
+        <p>We regret to inform you that your account registration has been declined.</p>
+        <p>If you believe this is an error, please contact our support team or try registering again.</p>
+      `,
+    });
+
+    res.json({ message: "User rejected and removed successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

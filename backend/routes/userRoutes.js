@@ -15,6 +15,8 @@ import {
   forgotPassword,
   verifyResetOTP,
   resetPassword,
+  verifyUser,
+  rejectUser,
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -36,5 +38,7 @@ router.post("/verify-otp", verifyOTP);
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-reset-otp", verifyResetOTP);
 router.post("/reset-password", protect, resetPassword);
+router.put("/:id/verify", protect, verifyUser);
+router.put("/:id/reject", protect, rejectUser);
 
 export default router;
