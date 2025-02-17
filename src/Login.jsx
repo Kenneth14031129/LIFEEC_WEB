@@ -359,12 +359,6 @@ const Login = () => {
                   <p className="mb-8 text-lg text-blue-100">
                     Professional Elderly Care System
                   </p>
-                  <button
-                    onClick={() => setIsLogin(false)}
-                    className="py-3 px-8 rounded-xl border-2 border-white text-white hover:bg-white hover:text-blue-600 transition-all duration-200 font-medium"
-                  >
-                    Sign Up
-                  </button>
                 </>
               ) : (
                 <>
