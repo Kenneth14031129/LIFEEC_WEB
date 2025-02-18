@@ -8,7 +8,6 @@ import {
   AlertCircle,
   UtensilsCrossed,
   Pill,
-  Clock,
   ChevronRight,
   ArrowLeft,
   FileText,
@@ -26,6 +25,7 @@ import HealthReviewModal from "./HealthReviewModal";
 import MealReviewModal from "./MealReviewModal";
 import ActivitiesReviewModal from "./ActivitiesReviewModal";
 import MealDisplaySection from "./MealDisplaySection";
+import QuickActions from "./QuickActions";
 import {
   getResidents,
   createHealthRecord,
@@ -1232,182 +1232,21 @@ const ResidentDetails = () => {
 
           {/* Quick Actions Sidebar */}
           {activeTab !== "overview" && (
-            <div className="col-span-12 lg:col-span-4 space-y-6 font-[Poppins]">
-              <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-white/20">
-                <h2 className="text-lg font-semibold text-gray-900 mb-6">
-                  Quick Actions
-                </h2>
-                <div className="space-y-3">
-                  {activeTab === "health" && (
-                    <div className="space-y-3">
-                      {/* Only show Update button if there are health records */}
-                      {healthRecords.length > 0 ? (
-                        <button
-                          onClick={handleUpdateClick}
-                          className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <FileText className="h-5 w-5 text-cyan-500" />
-                            <span className="font-medium text-cyan-700">
-                              Update Health Plan
-                            </span>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-cyan-500" />
-                        </button>
-                      ) : (
-                        <div className="w-full p-4 bg-gray-50 rounded-xl text-center">
-                          <span className="text-gray-500">
-                            No health records to update
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Add New Health Record button */}
-                      <button
-                        onClick={handleAddNewClick}
-                        className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-5 w-5 text-cyan-500" />
-                          <span className="font-medium text-cyan-700">
-                            Add New Health Plan
-                          </span>
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-cyan-500" />
-                      </button>
-
-                      {/* View History button */}
-                      {healthRecords.length > 0 && (
-                        <button
-                          onClick={() => setShowHealthHistoryModal(true)}
-                          className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Clock className="h-5 w-5 text-cyan-500" />
-                            <span className="font-medium text-cyan-700">
-                              View Health History
-                            </span>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-cyan-500" />
-                        </button>
-                      )}
-                    </div>
-                  )}
-
-                  {activeTab === "meals" && (
-                    <div className="space-y-3">
-                      {/* Only show Update button if there's a meal record */}
-                      {mealRecords.length > 0 ? (
-                        <button
-                          onClick={handleMealUpdateClick}
-                          className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <FileText className="h-5 w-5 text-cyan-500" />
-                            <span className="font-medium text-cyan-700">
-                              Update Meal Plan
-                            </span>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-cyan-500" />
-                        </button>
-                      ) : (
-                        <div className="w-full p-4 bg-gray-50 rounded-xl text-center">
-                          <span className="text-gray-500">
-                            No meal records to update
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Add New Meal Plan button */}
-                      <button
-                        onClick={handleAddNewMealClick}
-                        className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-5 w-5 text-cyan-500" />
-                          <span className="font-medium text-cyan-700">
-                            Add New Meal Plan
-                          </span>
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-cyan-500" />
-                      </button>
-
-                      {/* View History button */}
-                      {mealRecords.length > 0 && (
-                        <button
-                          onClick={() => setShowMealHistoryModal(true)}
-                          className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Clock className="h-5 w-5 text-cyan-500" />
-                            <span className="font-medium text-cyan-700">
-                              View Meal History
-                            </span>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-cyan-500" />
-                        </button>
-                      )}
-                    </div>
-                  )}
-
-                  {activeTab === "activities" && (
-                    <div className="space-y-3">
-                      {/* Only show Update button if there are activities */}
-                      {residentData.activities.length > 0 ? (
-                        <button
-                          onClick={handleActivityUpdateClick}
-                          className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <FileText className="h-5 w-5 text-cyan-500" />
-                            <span className="font-medium text-cyan-700">
-                              Update Activity Plan
-                            </span>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-cyan-500" />
-                        </button>
-                      ) : (
-                        <div className="w-full p-4 bg-gray-50 rounded-xl text-center">
-                          <span className="text-gray-500">
-                            No activities to update
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Add New Activity button */}
-                      <button
-                        onClick={handleAddNewActivityClick}
-                        className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Activity className="h-5 w-5 text-cyan-500" />
-                          <span className="font-medium text-cyan-700">
-                            Add New Activity Plan
-                          </span>
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-cyan-500" />
-                      </button>
-
-                      {/* View History button */}
-                      {residentData.activities.length > 0 && (
-                        <button
-                          onClick={() => setShowActivitiesHistoryModal(true)}
-                          className="w-full flex items-center justify-between p-4 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Clock className="h-5 w-5 text-cyan-500" />
-                            <span className="font-medium text-cyan-700">
-                              View Activitiy History
-                            </span>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-cyan-500" />
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <QuickActions
+              activeTab={activeTab}
+              healthRecords={healthRecords}
+              mealRecords={mealRecords}
+              activities={residentData.activities}
+              onUpdateHealth={handleUpdateClick}
+              onAddNewHealth={handleAddNewClick}
+              onViewHealthHistory={() => setShowHealthHistoryModal(true)}
+              onUpdateMeal={handleMealUpdateClick}
+              onAddNewMeal={handleAddNewMealClick}
+              onViewMealHistory={() => setShowMealHistoryModal(true)}
+              onUpdateActivity={handleActivityUpdateClick}
+              onAddNewActivity={handleAddNewActivityClick}
+              onViewActivityHistory={() => setShowActivitiesHistoryModal(true)}
+            />
           )}
         </div>
       </div>

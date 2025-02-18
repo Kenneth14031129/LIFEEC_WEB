@@ -27,7 +27,6 @@ export const RoleBasedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
-// Add PropTypes validation
 ProtectedRoute.propTypes = {
   children: PropTypes.node.isRequired,
 };
