@@ -200,7 +200,8 @@ export const verifyOTP = async (req, res) => {
       return res.status(400).json({ message: "User already verified" });
     }
 
-    if (!user.otp?.code || !user.otp?.expiry) {
+    // Updated OTP check
+    if (!user.otp || !user.otp.code || !user.otp.expiry) {
       return res.status(400).json({ message: "No OTP found for this user" });
     }
 
@@ -213,11 +214,7 @@ export const verifyOTP = async (req, res) => {
     }
 
     user.isVerified = true;
-    user.otp = {
-      code: null,
-      expiry: null,
-      verified: true,
-    };
+    user.otp = null; // Clear OTP after successful verification
     await user.save();
 
     res.json({
@@ -345,13 +342,18 @@ export const addUser = async (req, res) => {
       userType.toLowerCase()
     );
 
-    let otp = null;
-    let otpExpiry = null;
+    let otpData = null;
 
     if (requiresVerification) {
       // Generate OTP for admin/owner
-      otp = generateOTP();
-      otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+      const otpCode = generateOTP();
+      const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+
+      otpData = {
+        code: otpCode,
+        expiry: otpExpiry,
+        verified: false,
+      };
 
       // Send OTP email
       await transporter.sendMail({
@@ -360,7 +362,7 @@ export const addUser = async (req, res) => {
         subject: "LIFEEC Registration OTP",
         html: `
           <h1>Welcome to LIFEEC</h1>
-          <p>Your OTP for registration is: <strong>${otp}</strong></p>
+          <p>Your OTP for registration is: <strong>${otpCode}</strong></p>
           <p>This OTP will expire in 10 minutes.</p>
         `,
       });
@@ -372,9 +374,8 @@ export const addUser = async (req, res) => {
       email,
       password,
       userType,
-      otp,
-      otpExpiry,
-      isVerified: false,
+      otp: otpData,
+      isVerified: !requiresVerification, // Set to true for non-admin/owner accounts
     });
 
     if (user) {
