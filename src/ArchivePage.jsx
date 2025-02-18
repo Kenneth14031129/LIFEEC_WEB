@@ -14,7 +14,7 @@ const ArchivePage = () => {
   const [userToRestore, setUserToRestore] = useState(null);
   const navigate = useNavigate();
 
-  const filterOptions = ["Admin", "Owner", "Nurse", "Nutritionist", "Relative"];
+  const filterOptions = ["Nurse", "Nutritionist", "Relative"];
 
   useEffect(() => {
     const fetchArchivedUsers = async () => {
@@ -53,7 +53,7 @@ const ArchivePage = () => {
         prevUsers.filter((user) => user._id !== userToRestore._id)
       );
       setIsRestoreDialogOpen(false);
-      navigate("/add-user"); // Optionally navigate to the users page
+      navigate("/add-user");
     } catch (err) {
       setError(err.message);
     }
