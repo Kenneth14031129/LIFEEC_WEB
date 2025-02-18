@@ -143,17 +143,22 @@ export const registerUser = async (req, res) => {
     let otpExpiry = null;
 
     if (requiresVerification) {
-      otp = generateOTP();
-      otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 minutes
+      const otpCode = generateOTP();
+      const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
 
-      // Send OTP email
+      user.otp = {
+        code: otpCode,
+        expiry: otpExpiry,
+        verified: false,
+      };
+
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: email,
         subject: "LIFEEC Registration OTP",
         html: `
           <h1>Welcome to LIFEEC</h1>
-          <p>Your OTP for registration is: <strong>${otp}</strong></p>
+          <p>Your OTP for registration is: <strong>${otpCode}</strong></p>
           <p>This OTP will expire in 10 minutes.</p>
         `,
       });
@@ -195,21 +200,24 @@ export const verifyOTP = async (req, res) => {
       return res.status(400).json({ message: "User already verified" });
     }
 
-    if (!user.otp || !user.otpExpiry) {
+    if (!user.otp?.code || !user.otp?.expiry) {
       return res.status(400).json({ message: "No OTP found for this user" });
     }
 
-    if (Date.now() > user.otpExpiry) {
+    if (Date.now() > user.otp.expiry) {
       return res.status(400).json({ message: "OTP has expired" });
     }
 
-    if (user.otp !== otp) {
+    if (user.otp.code !== otp) {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
     user.isVerified = true;
-    user.otp = null;
-    user.otpExpiry = null;
+    user.otp = {
+      code: null,
+      expiry: null,
+      verified: true,
+    };
     await user.save();
 
     res.json({
@@ -366,7 +374,7 @@ export const addUser = async (req, res) => {
       userType,
       otp,
       otpExpiry,
-      isVerified: false
+      isVerified: false,
     });
 
     if (user) {
