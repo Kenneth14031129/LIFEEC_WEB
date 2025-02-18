@@ -195,15 +195,14 @@ const Login = () => {
               </div>
 
               <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center">
+                <label className="flex items-center cursor-pointer">
                   <input
                     type="checkbox"
-                    className="h-4 w-4 text-blue-600 rounded border-gray-300"
+                    className="h-4 w-4 text-blue-600 rounded border-gray-300 cursor-pointer"
                   />
                   <span className="ml-2 text-gray-600">Remember me</span>
                 </label>
-              </div>
-              <div>
+
                 <button
                   type="button"
                   onClick={() => navigate("/forgot-password")}
