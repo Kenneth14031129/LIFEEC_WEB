@@ -203,7 +203,11 @@ const Login = () => {
                   <span className="ml-2 text-gray-600">Remember me</span>
                 </label>
 
+                {/* Move this outside of the form */}
+              </div>
+              <div>
                 <button
+                  type="button" // Add type="button" to prevent form submission
                   onClick={() => navigate("/forgot-password")}
                   className="text-cyan-500 hover:text-blue-500 font-medium"
                 >
