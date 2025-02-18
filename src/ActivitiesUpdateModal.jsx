@@ -20,6 +20,68 @@ const ActivitiesUpdateModal = ({
     notes: "",
   });
 
+  const [errors, setErrors] = useState({
+    name: "",
+    date: "",
+    description: "",
+    duration: "",
+    location: "",
+  });
+
+  // Validation rules
+  const validateField = (name, value) => {
+    switch (name) {
+      case "name": {
+        if (!value.trim()) return "Activity name is required";
+        if (value.length < 3)
+          return "Activity name must be at least 3 characters";
+        if (value.length > 50)
+          return "Activity name must be less than 50 characters";
+        return "";
+      }
+
+      case "date": {
+        if (!value) return "Date is required";
+        const selectedDate = new Date(value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (isAddingNew && selectedDate < today) {
+          return "Cannot select past dates";
+        }
+        return "";
+      }
+
+      case "description": {
+        if (!value.trim()) return "Description is required";
+        if (value.length < 10)
+          return "Description must be at least 10 characters";
+        if (value.length > 500)
+          return "Description must be less than 500 characters";
+        return "";
+      }
+
+      case "duration": {
+        if (value && isNaN(value)) return "Duration must be a number";
+        if (value && value <= 0) return "Duration must be greater than 0";
+        if (value && value > 480)
+          return "Duration cannot exceed 8 hours (480 minutes)";
+        return "";
+      }
+
+      case "location": {
+        if (!value.trim()) return "Location is required";
+        if (value.length < 3) return "Location must be at least 3 characters";
+        if (value.length > 100)
+          return "Location must be less than 100 characters";
+        return "";
+      }
+
+      default:
+        return "";
+    }
+  };
+
   // Get the latest activity
   const getLatestActivity = useCallback(() => {
     if (!Array.isArray(activitiesRecords) || activitiesRecords.length === 0)
@@ -35,12 +97,10 @@ const ActivitiesUpdateModal = ({
   useEffect(() => {
     if (isOpen) {
       if (isAddingNew) {
-        // For new activities, set the date to the next day after the latest activity
         const latestActivity = getLatestActivity();
-        let nextDate = new Date().toISOString().split("T")[0]; // Default to today
+        let nextDate = new Date().toISOString().split("T")[0];
 
         if (latestActivity) {
-          // Get the next day after the latest activity
           const nextDay = new Date(latestActivity.date);
           nextDay.setDate(nextDay.getDate() + 1);
           nextDate = nextDay.toISOString().split("T")[0];
@@ -56,7 +116,6 @@ const ActivitiesUpdateModal = ({
           notes: "",
         });
       } else {
-        // Get the latest activity for updating
         const latestActivity = getLatestActivity();
 
         if (!latestActivity) {
@@ -75,24 +134,48 @@ const ActivitiesUpdateModal = ({
           notes: latestActivity.notes || "",
         });
       }
+      // Reset errors when modal opens
+      setErrors({
+        name: "",
+        date: "",
+        description: "",
+        duration: "",
+        location: "",
+      });
     }
   }, [isOpen, isAddingNew, getLatestActivity, onClose]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    // Validate field on change
+    const error = validateField(name, value);
+    setErrors((prev) => ({ ...prev, [name]: error }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validate that the new activity date is not in the past
+    // Validate all fields before submission
+    const newErrors = {
+      name: validateField("name", formData.name),
+      date: validateField("date", formData.date),
+      description: validateField("description", formData.description),
+      duration: validateField("duration", formData.duration),
+      location: validateField("location", formData.location),
+    };
+
+    setErrors(newErrors);
+
+    // Check if there are any errors
+    if (Object.values(newErrors).some((error) => error)) {
+      toast.error("Please fix the errors before submitting");
+      return;
+    }
+
+    // Additional date validation for new activities
     if (isAddingNew) {
-      const selectedDate = new Date(formData.date);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      if (selectedDate < today) {
-        toast.error("Cannot add activities for past dates");
-        return;
-      }
-
-      // Check if date already exists
       const dateExists = activitiesRecords.some(
         (record) => record.date === formData.date
       );
@@ -108,18 +191,18 @@ const ActivitiesUpdateModal = ({
   };
 
   const handleDateChange = (e) => {
-    if (!isAddingNew) return; // Prevent date changes when updating
+    if (!isAddingNew) return;
 
-    const selectedDate = new Date(e.target.value);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const value = e.target.value;
+    const error = validateField("date", value);
 
-    if (selectedDate < today) {
-      toast.error("Cannot select past dates");
+    if (error) {
+      toast.error(error);
       return;
     }
 
-    setFormData({ ...formData, date: e.target.value });
+    setFormData({ ...formData, date: value });
+    setErrors((prev) => ({ ...prev, date: "" }));
   };
 
   if (!isOpen) return null;
@@ -143,52 +226,64 @@ const ActivitiesUpdateModal = ({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Activity Name
+                Activity Name *
               </label>
               <input
                 type="text"
+                name="name"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                onChange={handleInputChange}
+                className={`w-full rounded-lg border ${
+                  errors.name ? "border-red-500" : "border-gray-300"
+                } focus:border-blue-500 focus:ring-blue-500`}
                 placeholder="Enter activity name"
-                required
               />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-500">{errors.name}</p>
+              )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date
+                Date *
               </label>
               <input
                 type="date"
+                name="date"
                 value={formData.date}
                 onChange={handleDateChange}
                 disabled={!isAddingNew}
-                className={`w-full rounded-lg border-gray-300 ${
+                className={`w-full rounded-lg border ${
+                  errors.date ? "border-red-500" : "border-gray-300"
+                } ${
                   !isAddingNew
                     ? "bg-gray-50 cursor-not-allowed"
                     : "focus:border-blue-500 focus:ring-blue-500"
                 }`}
                 min={new Date().toISOString().split("T")[0]}
-                required
               />
+              {errors.date && (
+                <p className="mt-1 text-sm text-red-500">{errors.date}</p>
+              )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Location
+                Location *
               </label>
               <input
                 type="text"
+                name="location"
                 value={formData.location}
-                onChange={(e) =>
-                  setFormData({ ...formData, location: e.target.value })
-                }
-                className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                onChange={handleInputChange}
+                className={`w-full rounded-lg border ${
+                  errors.location ? "border-red-500" : "border-gray-300"
+                } focus:border-blue-500 focus:ring-blue-500`}
                 placeholder="Enter activity location"
               />
+              {errors.location && (
+                <p className="mt-1 text-sm text-red-500">{errors.location}</p>
+              )}
             </div>
 
             <div>
@@ -196,11 +291,10 @@ const ActivitiesUpdateModal = ({
                 Status
               </label>
               <select
+                name="status"
                 value={formData.status}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: e.target.value })
-                }
-                className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                onChange={handleInputChange}
+                className="w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500"
               >
                 <option value="Scheduled">Scheduled</option>
                 <option value="In Progress">In Progress</option>
@@ -215,29 +309,37 @@ const ActivitiesUpdateModal = ({
               </label>
               <input
                 type="number"
+                name="duration"
                 value={formData.duration}
-                onChange={(e) =>
-                  setFormData({ ...formData, duration: e.target.value })
-                }
-                className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                onChange={handleInputChange}
+                className={`w-full rounded-lg border ${
+                  errors.duration ? "border-red-500" : "border-gray-300"
+                } focus:border-blue-500 focus:ring-blue-500`}
                 placeholder="Enter duration"
               />
+              {errors.duration && (
+                <p className="mt-1 text-sm text-red-500">{errors.duration}</p>
+              )}
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
+              Description *
             </label>
             <textarea
+              name="description"
               value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
+              onChange={handleInputChange}
               rows={3}
-              className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              className={`w-full rounded-lg border ${
+                errors.description ? "border-red-500" : "border-gray-300"
+              } focus:border-blue-500 focus:ring-blue-500`}
               placeholder="Enter activity description"
             />
+            {errors.description && (
+              <p className="mt-1 text-sm text-red-500">{errors.description}</p>
+            )}
           </div>
 
           <div>
@@ -245,12 +347,11 @@ const ActivitiesUpdateModal = ({
               Notes
             </label>
             <textarea
+              name="notes"
               value={formData.notes}
-              onChange={(e) =>
-                setFormData({ ...formData, notes: e.target.value })
-              }
+              onChange={handleInputChange}
               rows={3}
-              className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              className="w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500"
               placeholder="Enter additional notes"
             />
           </div>
@@ -265,7 +366,8 @@ const ActivitiesUpdateModal = ({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={Object.values(errors).some((error) => error)}
             >
               {isAddingNew ? "Add Activity" : "Update Activity"}
             </button>
