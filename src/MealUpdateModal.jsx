@@ -20,7 +20,6 @@ const MealUpdateModal = ({
     dinner: [""],
   });
 
-  // Add validation state
   const [errors, setErrors] = useState({
     date: "",
     dietaryNeeds: "",
@@ -31,11 +30,9 @@ const MealUpdateModal = ({
     dinner: [],
   });
 
-  // Initialize form with data when modal opens
   useEffect(() => {
     if (isOpen) {
       if (isAddingNew) {
-        // Reset form for new entry
         setFormData({
           date: new Date().toISOString().split("T")[0],
           dietaryNeeds: "",
@@ -46,10 +43,8 @@ const MealUpdateModal = ({
           dinner: [""],
         });
       } else if (mealRecords && mealRecords.length > 0) {
-        // Get the latest record
         const latestRecord = mealRecords[0];
 
-        // Initialize form with latest record data
         setFormData({
           date: latestRecord.date,
           dietaryNeeds: latestRecord.dietaryNeeds || "",
@@ -67,7 +62,6 @@ const MealUpdateModal = ({
         });
       }
 
-      // Reset errors when modal opens
       setErrors({
         date: "",
         dietaryNeeds: "",
@@ -80,7 +74,6 @@ const MealUpdateModal = ({
     }
   }, [isOpen, isAddingNew, mealRecords]);
 
-  // Validation rules
   const validateForm = () => {
     let isValid = true;
     const newErrors = {
@@ -159,20 +152,17 @@ const MealUpdateModal = ({
     return isValid;
   };
 
-  // Handle adding a new item to a meal array
   const handleAddMealItem = (mealType) => {
     setFormData((prev) => ({
       ...prev,
       [mealType]: [...prev[mealType], ""],
     }));
-    // Clear any existing errors for the new item
     setErrors((prev) => ({
       ...prev,
       [mealType]: [...prev[mealType], ""],
     }));
   };
 
-  // Handle removing an item from a meal array
   const handleRemoveMealItem = (mealType, index) => {
     setFormData((prev) => ({
       ...prev,
@@ -184,20 +174,17 @@ const MealUpdateModal = ({
     }));
   };
 
-  // Handle updating a specific meal item
   const handleMealItemChange = (mealType, index, value) => {
     setFormData((prev) => ({
       ...prev,
       [mealType]: prev[mealType].map((item, i) => (i === index ? value : item)),
     }));
-    // Clear error when user starts typing
     setErrors((prev) => ({
       ...prev,
       [mealType]: prev[mealType].map((error, i) => (i === index ? "" : error)),
     }));
   };
 
-  // Modified handleSubmit with validation
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -206,7 +193,6 @@ const MealUpdateModal = ({
       return;
     }
 
-    // Filter out empty items from arrays before submitting
     const cleanedData = {
       ...formData,
       breakfast: formData.breakfast.filter((item) => item.trim()),
@@ -215,7 +201,6 @@ const MealUpdateModal = ({
       dinner: formData.dinner.filter((item) => item.trim()),
     };
 
-    // Add date validation for new records
     if (isAddingNew) {
       const dateExists = mealRecords.some(
         (record) => record.date === formData.date
@@ -231,7 +216,6 @@ const MealUpdateModal = ({
     onClose();
   };
 
-  // Add date change handler with validation
   const handleDateChange = (e) => {
     if (!isAddingNew) return;
 
@@ -244,6 +228,7 @@ const MealUpdateModal = ({
         ...prev,
         date: "Cannot add meal plans for past dates",
       }));
+      toast.error("Cannot add meal plans for past dates");
       return;
     }
 
@@ -350,21 +335,32 @@ const MealUpdateModal = ({
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Date
-            </label>
-            {isAddingNew ? (
-              <input
-                type="date"
-                value={formData.date}
-                onChange={handleDateChange}
-                className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                required
-              />
-            ) : (
-              <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
-                <Calendar className="h-5 w-5 text-gray-400" />
-                <span className="text-gray-600">{formData.date}</span>
+            {renderInputWithError(
+              "date",
+              errors.date,
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Date
+                </label>
+                {isAddingNew ? (
+                  <input
+                    type="date"
+                    value={formData.date}
+                    onChange={handleDateChange}
+                    className={`w-full rounded-lg border ${
+                      errors.date
+                        ? "border-red-500 focus:ring-red-500"
+                        : "border-gray-300 focus:ring-blue-500"
+                    } focus:border-transparent focus:ring-2`}
+                    min={new Date().toISOString().split("T")[0]}
+                    required
+                  />
+                ) : (
+                  <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                    <Calendar className="h-5 w-5 text-gray-400" />
+                    <span className="text-gray-600">{formData.date}</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
