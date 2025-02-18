@@ -35,6 +35,43 @@ const ViewProfile = () => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordChangeMessage, setPasswordChangeMessage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    location: "",
+  });
+
+  const validateFullName = (name) => {
+    if (!name) return "Full name is required";
+    if (name.length < 5) return "Full name must be at least 5 characters";
+    if (name.length > 30) return "Full name must be less than 30 characters";
+    if (!/^[a-zA-Z\s]*$/.test(name))
+      return "Full name can only contain letters and spaces";
+    return "";
+  };
+
+  const validateEmail = (email) => {
+    if (!email) return "Email is required";
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.com$/i;
+    if (!emailRegex.test(email))
+      return "Please enter a valid email address ending in .com";
+    return "";
+  };
+
+  const validatePhone = (phone) => {
+    if (phone === "N/A") return "";
+    if (!phone.startsWith("+63")) return "Phone number must start with +63";
+    if (!/^\+63\d{10}$/.test(phone))
+      return "Phone number must be 10 digits after +63";
+    return "";
+  };
+
+  const validateLocation = (location) => {
+    if (location === "N/A") return "";
+    if (location.length > 50) return "Location must be less than 50 characters";
+    return "";
+  };
 
   useEffect(() => {
     fetchProfile();
@@ -72,10 +109,8 @@ const ViewProfile = () => {
     const { name, value } = e.target;
 
     if (name === "phone") {
-      // Remove any non-digit characters except '+'
+      // Existing phone validation logic
       let phoneNumber = value.replace(/[^\d+]/g, "");
-
-      // Ensure it starts with +63
       if (!phoneNumber.startsWith("+63")) {
         if (phoneNumber.startsWith("63")) {
           phoneNumber = "+" + phoneNumber;
@@ -86,25 +121,63 @@ const ViewProfile = () => {
         }
       }
 
-      // Update the form with formatted phone number
       setEditForm((prev) => ({
         ...prev,
         phone: phoneNumber,
+      }));
+
+      // Validate phone
+      const phoneError = validatePhone(phoneNumber);
+      setValidationErrors((prev) => ({
+        ...prev,
+        phone: phoneError,
       }));
     } else {
       setEditForm((prev) => ({
         ...prev,
         [name]: value,
       }));
+
+      // Validate other fields
+      let error = "";
+      switch (name) {
+        case "fullName":
+          error = validateFullName(value);
+          break;
+        case "email":
+          error = validateEmail(value);
+          break;
+        case "location":
+          error = validateLocation(value);
+          break;
+        default:
+          break;
+      }
+
+      setValidationErrors((prev) => ({
+        ...prev,
+        [name]: error,
+      }));
     }
   };
 
+  // Modify the handleSubmit function
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate phone number
-    if (editForm.phone !== "N/A" && !editForm.phone.startsWith("+63")) {
-      setUpdateError("Phone number must start with +63");
+    // Validate all fields
+    const errors = {
+      fullName: validateFullName(editForm.fullName),
+      email: validateEmail(editForm.email),
+      phone: validatePhone(editForm.phone),
+      location: validateLocation(editForm.location),
+    };
+
+    setValidationErrors(errors);
+
+    // Check if there are any errors
+    if (Object.values(errors).some((error) => error !== "")) {
+      setUpdateError("Please fix the validation errors before submitting");
       return;
     }
 
@@ -121,9 +194,7 @@ const ViewProfile = () => {
       });
 
       setIsEditing(false);
-      // Add success message
       setSuccessMessage("Profile updated successfully!");
-      // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       console.error("Update error:", err);
@@ -184,8 +255,17 @@ const ViewProfile = () => {
                     name="fullName"
                     value={editForm.fullName}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border ${
+                      validationErrors.fullName
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   />
+                  {validationErrors.fullName && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {validationErrors.fullName}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -201,8 +281,17 @@ const ViewProfile = () => {
                     name="email"
                     value={editForm.email}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border ${
+                      validationErrors.email
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   />
+                  {validationErrors.email && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {validationErrors.email}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -219,8 +308,17 @@ const ViewProfile = () => {
                     value={editForm.phone}
                     onChange={handleInputChange}
                     placeholder="+63 Phone Number"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border ${
+                      validationErrors.phone
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   />
+                  {validationErrors.phone && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {validationErrors.phone}
+                    </p>
+                  )}
                   <p className="mt-1 text-sm text-gray-500">
                     Must start with +63
                   </p>
@@ -239,8 +337,17 @@ const ViewProfile = () => {
                     name="location"
                     value={editForm.location}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border ${
+                      validationErrors.location
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   />
+                  {validationErrors.location && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {validationErrors.location}
+                    </p>
+                  )}
                 </div>
               </div>
 

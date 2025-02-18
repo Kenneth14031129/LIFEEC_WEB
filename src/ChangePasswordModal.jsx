@@ -15,35 +15,88 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
     newPassword: false,
     confirmNewPassword: false,
   });
+  const [validationErrors, setValidationErrors] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmNewPassword: "",
+  });
 
+  const validatePassword = (password) => {
+    if (!password) return "Password is required";
+    if (password.length < 8) return "Password must be at least 8 characters";
+    if (!/[A-Z]/.test(password))
+      return "Password must contain at least one uppercase letter";
+    if (!/[a-z]/.test(password))
+      return "Password must contain at least one lowercase letter";
+    if (!/[0-9]/.test(password))
+      return "Password must contain at least one number";
+    if (!/[_!@#$%^&*]/.test(password))
+      return "Password must contain at least one special character (_!@#$%^&*)";
+    return "";
+  };
+
+  // Modify handleInputChange to include validation
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setPasswordForm((prev) => ({
       ...prev,
       [name]: value,
     }));
-  };
 
-  const togglePasswordVisibility = (field) => {
-    setShowPasswords((prev) => ({
+    // Real-time validation
+    let error = "";
+    if (name === "currentPassword") {
+      if (!value) error = "Current password is required";
+    } else if (name === "newPassword") {
+      error = validatePassword(value);
+      // Also check confirm password match if it has a value
+      if (
+        passwordForm.confirmNewPassword &&
+        value !== passwordForm.confirmNewPassword
+      ) {
+        setValidationErrors((prev) => ({
+          ...prev,
+          confirmNewPassword: "Passwords do not match",
+        }));
+      } else {
+        setValidationErrors((prev) => ({
+          ...prev,
+          confirmNewPassword: "",
+        }));
+      }
+    } else if (name === "confirmNewPassword") {
+      if (!value) error = "Please confirm your password";
+      else if (value !== passwordForm.newPassword)
+        error = "Passwords do not match";
+    }
+
+    setValidationErrors((prev) => ({
       ...prev,
-      [field]: !prev[field],
+      [name]: error,
     }));
   };
 
+  // Modify handleSubmit to check all validations
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
-    // Basic validation
-    if (passwordForm.newPassword !== passwordForm.confirmNewPassword) {
-      setError("New passwords do not match");
-      return;
-    }
+    // Validate all fields
+    const newErrors = {
+      currentPassword: !passwordForm.currentPassword
+        ? "Current password is required"
+        : "",
+      newPassword: validatePassword(passwordForm.newPassword),
+      confirmNewPassword:
+        passwordForm.newPassword !== passwordForm.confirmNewPassword
+          ? "Passwords do not match"
+          : "",
+    };
 
-    // Additional password strength validation
-    if (passwordForm.newPassword.length < 8) {
-      setError("New password must be at least 8 characters long");
+    setValidationErrors(newErrors);
+
+    // Check if there are any validation errors
+    if (Object.values(newErrors).some((error) => error !== "")) {
       return;
     }
 
@@ -53,19 +106,23 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
         newPassword: passwordForm.newPassword,
       });
 
-      // Reset form
       setPasswordForm({
         currentPassword: "",
         newPassword: "",
         confirmNewPassword: "",
       });
 
-      // Call onSuccess with message
       onSuccess("Password changed successfully");
-      // Remove the onClose() call here since it's now handled in the parent
     } catch (err) {
       setError(err.message || "Failed to change password. Please try again.");
     }
+  };
+
+  const togglePasswordVisibility = (field) => {
+    setShowPasswords((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
   };
 
   return (
@@ -90,6 +147,7 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
           )}
 
           <div className="space-y-4">
+            {/* Current Password */}
             <div>
               <label
                 htmlFor="currentPassword"
@@ -105,7 +163,11 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
                   value={passwordForm.currentPassword}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                  className={`w-full px-3 py-2 border ${
+                    validationErrors.currentPassword
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10`}
                   placeholder="Enter current password"
                 />
                 <button
@@ -120,8 +182,14 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
                   )}
                 </button>
               </div>
+              {validationErrors.currentPassword && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.currentPassword}
+                </p>
+              )}
             </div>
 
+            {/* New Password */}
             <div>
               <label
                 htmlFor="newPassword"
@@ -137,7 +205,11 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
                   value={passwordForm.newPassword}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                  className={`w-full px-3 py-2 border ${
+                    validationErrors.newPassword
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10`}
                   placeholder="Enter new password"
                 />
                 <button
@@ -152,11 +224,19 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
                   )}
                 </button>
               </div>
+              {validationErrors.newPassword && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.newPassword}
+                </p>
+              )}
               <p className="text-xs text-gray-500 mt-1">
-                Password must be at least 8 characters long
+                Password must contain at least 8 characters, one uppercase
+                letter, one lowercase letter, one number, and one special
+                character (_!@#$%^&*)
               </p>
             </div>
 
+            {/* Confirm New Password */}
             <div>
               <label
                 htmlFor="confirmNewPassword"
@@ -172,7 +252,11 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
                   value={passwordForm.confirmNewPassword}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                  className={`w-full px-3 py-2 border ${
+                    validationErrors.confirmNewPassword
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10`}
                   placeholder="Confirm new password"
                 />
                 <button
@@ -187,6 +271,11 @@ const ChangePasswordModal = ({ onClose, onSuccess }) => {
                   )}
                 </button>
               </div>
+              {validationErrors.confirmNewPassword && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.confirmNewPassword}
+                </p>
+              )}
             </div>
           </div>
 

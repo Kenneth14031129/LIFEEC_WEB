@@ -152,8 +152,8 @@ const AddUser = () => {
   // Validation rules
   const validateFullName = (name) => {
     if (!name) return "Full name is required";
-    if (name.length < 2) return "Full name must be at least 2 characters";
-    if (name.length > 50) return "Full name must be less than 50 characters";
+    if (name.length < 5) return "Full name must be at least 5 characters";
+    if (name.length > 30) return "Full name must be less than 30 characters";
     if (!/^[a-zA-Z\s]*$/.test(name))
       return "Full name can only contain letters and spaces";
     return "";
