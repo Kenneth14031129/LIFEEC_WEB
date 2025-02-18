@@ -20,9 +20,17 @@ const Sidebar = ({ activePage = "dashboard" }) => {
       { icon: Layout, label: "Dashboard", route: "/dashboard" },
       { icon: UserPlus, label: "Add User", route: "/add-user" },
       { icon: Users, label: "Residents List", route: "/residents-list" },
-      { icon: UserPlus, label: "Add Resident", route: "/add-resident" },
       { icon: Archive, label: "Archive", route: "/archive" },
     ];
+
+    // Add "Add Resident" only for admin
+    if (userType === "admin") {
+      baseMenuItems.splice(3, 0, {
+        icon: UserPlus,
+        label: "Add Resident",
+        route: "/add-resident",
+      });
+    }
 
     // Add Messages menu item only for admin
     if (userType === "admin") {

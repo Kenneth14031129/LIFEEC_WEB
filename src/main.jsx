@@ -31,9 +31,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route
           path="/add-resident"
           element={
-            <ProtectedRoute>
+            <RoleBasedRoute allowedRoles={["admin"]}>
               <AddResident />
-            </ProtectedRoute>
+            </RoleBasedRoute>
           }
         />
         <Route
