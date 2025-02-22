@@ -13,7 +13,7 @@ import {
 import { getResidents } from "../services/api";
 import Sidebar from "./SideBar";
 import EmergencyAlertButton from "./EmergencyAlertButton";
-import DownloadResidentsData from './DownloadResidentsData';
+import DownloadResidentsData from "./DownloadResidentsData";
 
 const ResidentList = () => {
   const navigate = useNavigate();
@@ -22,6 +22,32 @@ const ResidentList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const savedState = localStorage.getItem("sidebarCollapsed");
+    return savedState ? JSON.parse(savedState) : false;
+  });
+
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "sidebarCollapsed") {
+        setIsCollapsed(JSON.parse(e.newValue));
+      }
+    };
+
+    const savedState = localStorage.getItem("sidebarCollapsed");
+    setIsCollapsed(savedState ? JSON.parse(savedState) : false);
+
+    window.addEventListener("storage", handleStorageChange);
+
+    window.addEventListener("sidebarStateChange", (e) => {
+      setIsCollapsed(e.detail.isCollapsed);
+    });
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("sidebarStateChange", handleStorageChange);
+    };
+  }, []);
   const [filters, setFilters] = useState({
     ageRange: "all",
     gender: "all",
@@ -192,8 +218,15 @@ const ResidentList = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-poppins">
-        <Sidebar activePage="residents-list" />
-        <div className="ml-72 p-8 flex items-center justify-center">
+        <Sidebar
+          activePage="residents-list"
+          onToggle={(collapsed) => setIsCollapsed(collapsed)}
+        />
+        <div
+          className={`transition-all duration-300 ease-in-out ${
+            isCollapsed ? "ml-24" : "ml-72"
+          } p-8 flex items-center justify-center`}
+        >
           <div className="text-gray-600">Loading residents...</div>
         </div>
       </div>
@@ -203,8 +236,15 @@ const ResidentList = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-poppins">
-        <Sidebar activePage="residents-list" />
-        <div className="ml-72 p-8 flex items-center justify-center">
+        <Sidebar
+          activePage="residents-list"
+          onToggle={(collapsed) => setIsCollapsed(collapsed)}
+        />
+        <div
+          className={`transition-all duration-300 ease-in-out ${
+            isCollapsed ? "ml-24" : "ml-72"
+          } p-8 flex items-center justify-center`}
+        >
           <div className="text-red-600">Error: {error}</div>
         </div>
       </div>
@@ -213,9 +253,16 @@ const ResidentList = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-poppins">
-      <Sidebar activePage="residents-list" />
+      <Sidebar
+        activePage="residents-list"
+        onToggle={(collapsed) => setIsCollapsed(collapsed)}
+      />
 
-      <div className="ml-72 p-8">
+      <div
+        className={`transition-all duration-300 ease-in-out ${
+          isCollapsed ? "ml-24" : "ml-72"
+        } p-8`}
+      >
         <div className="mb-8 bg-white/90 backdrop-blur-xl p-8 rounded-2xl shadow-lg border border-gray-100">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -226,7 +273,7 @@ const ResidentList = () => {
             </div>
 
             <div className="flex items-center gap-4">
-            <DownloadResidentsData residents={filteredResidents} />
+              <DownloadResidentsData residents={filteredResidents} />
 
               <div className="h-6 w-px bg-gray-200 mx-2"></div>
               <div className="relative">

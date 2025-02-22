@@ -35,6 +35,34 @@ const ViewProfile = () => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordChangeMessage, setPasswordChangeMessage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const savedState = localStorage.getItem("sidebarCollapsed");
+    return savedState ? JSON.parse(savedState) : false;
+  });
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "sidebarCollapsed") {
+        setIsCollapsed(JSON.parse(e.newValue));
+      }
+    };
+
+    // Initial check
+    const savedState = localStorage.getItem("sidebarCollapsed");
+    setIsCollapsed(savedState ? JSON.parse(savedState) : false);
+
+    // Listen for changes
+    window.addEventListener("storage", handleStorageChange);
+
+    // Add custom event listener for same-window updates
+    window.addEventListener("sidebarStateChange", (e) => {
+      setIsCollapsed(e.detail.isCollapsed);
+    });
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("sidebarStateChange", handleStorageChange);
+    };
+  }, []);
   const [validationErrors, setValidationErrors] = useState({
     fullName: "",
     email: "",
@@ -220,7 +248,10 @@ const ViewProfile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-poppins">
-      <Sidebar activePage="profile" />
+      <Sidebar
+        activePage="profile"
+        onToggle={(collapsed) => setIsCollapsed(collapsed)}
+      />
 
       {/* Edit Modal */}
       {isEditing && (
@@ -371,7 +402,11 @@ const ViewProfile = () => {
         </div>
       )}
 
-      <div className="ml-72 p-8">
+      <div
+        className={`transition-all duration-300 ease-in-out ${
+          isCollapsed ? "ml-24" : "ml-72"
+        } p-8`}
+      >
         {/* Back Button */}
         <button
           onClick={() => window.history.back()}

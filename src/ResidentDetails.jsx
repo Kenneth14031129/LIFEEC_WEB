@@ -58,6 +58,34 @@ const ResidentDetails = () => {
   const [activitiesRecords, setActivitiesRecords] = useState([]);
   const [showHealthHistoryModal, setShowHealthHistoryModal] = useState(false);
   const [showMealHistoryModal, setShowMealHistoryModal] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const savedState = localStorage.getItem("sidebarCollapsed");
+    return savedState ? JSON.parse(savedState) : false;
+  });
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "sidebarCollapsed") {
+        setIsCollapsed(JSON.parse(e.newValue));
+      }
+    };
+
+    // Initial check
+    const savedState = localStorage.getItem("sidebarCollapsed");
+    setIsCollapsed(savedState ? JSON.parse(savedState) : false);
+
+    // Listen for changes
+    window.addEventListener("storage", handleStorageChange);
+
+    // Add custom event listener for same-window updates
+    window.addEventListener("sidebarStateChange", (e) => {
+      setIsCollapsed(e.detail.isCollapsed);
+    });
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("sidebarStateChange", handleStorageChange);
+    };
+  }, []);
   const [showActivitiesHistoryModal, setShowActivitiesHistoryModal] =
     useState(false);
   const [residentData, setResidentData] = useState({
@@ -429,16 +457,12 @@ const ResidentDetails = () => {
           return;
         }
 
-        // Update existing record
         response = await updateMealRecord(id, existingRecord._id, updatedMeal);
 
-        // Set success message
         setSuccessMessage("Meal plan updated successfully!");
 
-        // Clear message after 3 seconds
         setTimeout(() => setSuccessMessage(null), 3000);
 
-        // Update the record in the array
         setMealRecords((prevRecords) =>
           prevRecords.map((record) =>
             record._id === existingRecord._id ? response.mealRecord : record
@@ -473,13 +497,10 @@ const ResidentDetails = () => {
       let response;
 
       if (isAddingNewActivity) {
-        // Create new record
         response = await createActivitiesRecord(id, updatedActivities);
 
-        // Set success message
         setSuccessMessage("Activity added successfully!");
 
-        // Clear message after 3 seconds
         setTimeout(() => setSuccessMessage(null), 3000);
 
         const newActivity = {
@@ -493,7 +514,6 @@ const ResidentDetails = () => {
           activities: [newActivity, ...prev.activities],
         }));
       } else {
-        // Find the activity record that matches the date we're updating
         const existingActivity = activitiesRecords.find(
           (record) => record.date === updatedActivities.activities[0].date
         );
@@ -503,17 +523,14 @@ const ResidentDetails = () => {
           return;
         }
 
-        // Update existing record
         response = await updateActivitiesRecord(
           id,
           existingActivity._id,
           updatedActivities
         );
 
-        // Set success message
         setSuccessMessage("Activity updated successfully!");
 
-        // Clear message after 3 seconds
         setTimeout(() => setSuccessMessage(null), 3000);
 
         const updatedActivity = {
@@ -521,14 +538,12 @@ const ResidentDetails = () => {
           _id: existingActivity._id,
         };
 
-        // Update activities records - replace old record with updated one
         setActivitiesRecords((prevRecords) => {
           return prevRecords.map((record) =>
             record._id === existingActivity._id ? updatedActivity : record
           );
         });
 
-        // Update resident data - replace old activity with updated one
         setResidentData((prev) => ({
           ...prev,
           activities: prev.activities.map((activity) =>
@@ -551,8 +566,15 @@ const ResidentDetails = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <Sidebar activePage="residents-list" />
-        <div className="ml-72 p-8 flex items-center justify-center">
+        <Sidebar
+          activePage="residents-list"
+          onToggle={(collapsed) => setIsCollapsed(collapsed)}
+        />
+        <div
+          className={`transition-all duration-300 ease-in-out ${
+            isCollapsed ? "ml-24" : "ml-72"
+          } p-8 flex items-center justify-center`}
+        >
           <div className="text-gray-600">Loading resident details...</div>
         </div>
       </div>
@@ -562,8 +584,15 @@ const ResidentDetails = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <Sidebar activePage="residents-list" />
-        <div className="ml-72 p-8 flex items-center justify-center">
+        <Sidebar
+          activePage="residents-list"
+          onToggle={(collapsed) => setIsCollapsed(collapsed)}
+        />
+        <div
+          className={`transition-all duration-300 ease-in-out ${
+            isCollapsed ? "ml-24" : "ml-72"
+          } p-8 flex items-center justify-center`}
+        >
           <div className="text-red-600">Error: {error}</div>
         </div>
       </div>
@@ -585,9 +614,16 @@ const ResidentDetails = () => {
           </button>
         </div>
       )}
-      <Sidebar activePage="residents-list" />
+      <Sidebar
+        activePage="residents-list"
+        onToggle={(collapsed) => setIsCollapsed(collapsed)}
+      />
 
-      <div className="ml-72 p-8">
+      <div
+        className={`transition-all duration-300 ease-in-out ${
+          isCollapsed ? "ml-24" : "ml-72"
+        } p-8`}
+      >
         {showHealthModal && (
           <HealthUpdateModal
             isOpen={showHealthModal}

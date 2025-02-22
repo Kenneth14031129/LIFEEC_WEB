@@ -43,6 +43,32 @@ const AddUser = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const navigate = useNavigate();
   const [successMessage, setSuccessMessage] = useState(null);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const savedState = localStorage.getItem("sidebarCollapsed");
+    return savedState ? JSON.parse(savedState) : false;
+  });
+
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "sidebarCollapsed") {
+        setIsCollapsed(JSON.parse(e.newValue));
+      }
+    };
+
+    const savedState = localStorage.getItem("sidebarCollapsed");
+    setIsCollapsed(savedState ? JSON.parse(savedState) : false);
+
+    window.addEventListener("storage", handleStorageChange);
+
+    window.addEventListener("sidebarStateChange", (e) => {
+      setIsCollapsed(e.detail.isCollapsed);
+    });
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("sidebarStateChange", handleStorageChange);
+    };
+  }, []);
   const [errors, setErrors] = useState({
     fullName: "",
     email: "",
@@ -213,7 +239,7 @@ const AddUser = () => {
     try {
       setIsSubmitting(true);
       const response = await addUser(formData);
-      
+
       // Add user to pending list for regular users
       if (!["admin", "owner"].includes(formData.userType.toLowerCase())) {
         setPendingUsers((prev) => [...prev, response]);
@@ -221,7 +247,7 @@ const AddUser = () => {
         // For admin/owner, directly add to active users
         setUsers((prev) => [...prev, { ...response, isVerified: true }]);
       }
-      
+
       setFormData({
         fullName: "",
         email: "",
@@ -306,9 +332,16 @@ const AddUser = () => {
         </div>
       )}
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <Sidebar activePage="add-user" />
+        <Sidebar
+          activePage="add-user"
+          onToggle={(collapsed) => setIsCollapsed(collapsed)}
+        />
 
-        <div className="ml-72 p-8">
+        <div
+          className={`transition-all duration-300 ease-in-out ${
+            isCollapsed ? "ml-24" : "ml-72"
+          } p-8`}
+        >
           {/* Header Section */}
           <div className="mb-8 bg-white/80 backdrop-blur-xl p-6 rounded-xl shadow-sm border border-white/20">
             <div className="flex items-center justify-between">

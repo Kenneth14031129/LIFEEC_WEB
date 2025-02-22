@@ -31,6 +31,35 @@ const Dashboard = () => {
   const [monthlyStats, setMonthlyStats] = useState([]);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [availableYears, setAvailableYears] = useState([]);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const savedState = localStorage.getItem("sidebarCollapsed");
+    return savedState ? JSON.parse(savedState) : false;
+  });
+
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "sidebarCollapsed") {
+        setIsCollapsed(JSON.parse(e.newValue));
+      }
+    };
+
+    // Initial check
+    const savedState = localStorage.getItem("sidebarCollapsed");
+    setIsCollapsed(savedState ? JSON.parse(savedState) : false);
+
+    // Listen for changes
+    window.addEventListener("storage", handleStorageChange);
+
+    // Add custom event listener for same-window updates
+    window.addEventListener("sidebarStateChange", (e) => {
+      setIsCollapsed(e.detail.isCollapsed);
+    });
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("sidebarStateChange", handleStorageChange);
+    };
+  }, []);
 
   const [userData, setUserData] = useState({
     fullName: "",
@@ -239,9 +268,16 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-poppins">
-      <Sidebar activePage="dashboard" />
+      <Sidebar
+        activePage="dashboard"
+        onToggle={(collapsed) => setIsCollapsed(collapsed)}
+      />
 
-      <div className="ml-72 p-8">
+      <div
+        className={`transition-all duration-300 ease-in-out ${
+          isCollapsed ? "ml-24" : "ml-72"
+        } p-8`}
+      >
         {/* Header */}
         <div className="flex justify-between items-center mb-8 bg-gradient-to-r from-white/80 to-white/60 p-4 rounded-xl shadow-sm border border-white/20">
           <div className="flex-1 flex items-center gap-4">

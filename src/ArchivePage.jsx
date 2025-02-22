@@ -13,6 +13,35 @@ const ArchivePage = () => {
   const [isRestoreDialogOpen, setIsRestoreDialogOpen] = useState(false);
   const [userToRestore, setUserToRestore] = useState(null);
   const navigate = useNavigate();
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const savedState = localStorage.getItem("sidebarCollapsed");
+    return savedState ? JSON.parse(savedState) : false;
+  });
+
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "sidebarCollapsed") {
+        setIsCollapsed(JSON.parse(e.newValue));
+      }
+    };
+
+    // Initial check
+    const savedState = localStorage.getItem("sidebarCollapsed");
+    setIsCollapsed(savedState ? JSON.parse(savedState) : false);
+
+    // Listen for changes
+    window.addEventListener("storage", handleStorageChange);
+
+    // Add custom event listener for same-window updates
+    window.addEventListener("sidebarStateChange", (e) => {
+      setIsCollapsed(e.detail.isCollapsed);
+    });
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("sidebarStateChange", handleStorageChange);
+    };
+  }, []);
 
   const filterOptions = ["Nurse", "Nutritionist", "Relative"];
 
@@ -84,9 +113,16 @@ const ArchivePage = () => {
   return (
     <div className="font-[Poppins]">
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <Sidebar activePage="archive" />
+        <Sidebar
+          activePage="archive"
+          onToggle={(collapsed) => setIsCollapsed(collapsed)}
+        />
 
-        <div className="ml-72 p-8">
+        <div
+          className={`transition-all duration-300 ease-in-out ${
+            isCollapsed ? "ml-24" : "ml-72"
+          } p-8`}
+        >
           {/* Header Section */}
           <div className="mb-8 bg-white/80 backdrop-blur-xl p-6 rounded-xl shadow-sm border border-white/20">
             <div className="flex items-center justify-between">

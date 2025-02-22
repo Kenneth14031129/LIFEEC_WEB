@@ -1,12 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  Search,
-  MessageSquare,
-  Smile,
-  Send,
-  Check,
-  CheckCheck,
-} from "lucide-react";
+import { Search, MessageSquare, Send, Check, CheckCheck } from "lucide-react";
 import Sidebar from "./SideBar";
 import PropTypes from "prop-types";
 import {
@@ -27,6 +20,34 @@ const Messages = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const savedState = localStorage.getItem("sidebarCollapsed");
+    return savedState ? JSON.parse(savedState) : false;
+  });
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "sidebarCollapsed") {
+        setIsCollapsed(JSON.parse(e.newValue));
+      }
+    };
+
+    // Initial check
+    const savedState = localStorage.getItem("sidebarCollapsed");
+    setIsCollapsed(savedState ? JSON.parse(savedState) : false);
+
+    // Listen for changes
+    window.addEventListener("storage", handleStorageChange);
+
+    // Add custom event listener for same-window updates
+    window.addEventListener("sidebarStateChange", (e) => {
+      setIsCollapsed(e.detail.isCollapsed);
+    });
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("sidebarStateChange", handleStorageChange);
+    };
+  }, []);
 
   const ALLOWED_USER_TYPES = ["admin", "nurse", "nutritionist", "relative"];
 
@@ -266,11 +287,18 @@ const Messages = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <Sidebar activePage="messages" />
+      <Sidebar
+        activePage="messages"
+        onToggle={(collapsed) => setIsCollapsed(collapsed)}
+      />
 
-      <div className="ml-72 flex h-screen">
+      <div
+        className={`transition-all duration-300 ease-in-out ${
+          isCollapsed ? "ml-24" : "ml-72"
+        } flex h-screen`}
+      >
         {/* Chat List Sidebar */}
-        <div className="w-97 border-r border-gray-200 bg-white/80 backdrop-blur-xl">
+        <div className="w-96 border-r border-gray-200 bg-white/80">
           {/* Header */}
           <div className="p-6 border-b border-gray-200">
             <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent mb-4">
@@ -290,26 +318,44 @@ const Messages = () => {
 
           {/* Filter Tabs */}
           <div className="px-4 py-3 border-b border-gray-200">
-            <div className="flex gap-2 p-1 bg-gray-100/50 rounded-xl">
-              {[
-                { id: "all", label: "All" },
-                { id: "Admin", label: "Admins" },
-                { id: "Nurse", label: "Nurses" },
-                { id: "Nutritionist", label: "Nutritionists" },
-                { id: "Relative", label: "Relatives" },
-              ].map((filter) => (
-                <button
-                  key={filter.id}
-                  onClick={() => setActiveFilter(filter.id)}
-                  className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    activeFilter === filter.id
-                      ? "bg-white text-cyan-500 shadow-sm"
-                      : "text-gray-600 hover:bg-white/50"
-                  }`}
-                >
-                  {filter.label}
-                </button>
-              ))}
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                {[
+                  { id: "all", label: "All" },
+                  { id: "Admin", label: "Admins" },
+                  { id: "Nurse", label: "Nurses" },
+                ].map((filter) => (
+                  <button
+                    key={filter.id}
+                    onClick={() => setActiveFilter(filter.id)}
+                    className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      activeFilter === filter.id
+                        ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                {[
+                  { id: "Nutritionist", label: "Nutritionists" },
+                  { id: "Relative", label: "Relatives" },
+                ].map((filter) => (
+                  <button
+                    key={filter.id}
+                    onClick={() => setActiveFilter(filter.id)}
+                    className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      activeFilter === filter.id
+                        ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -428,12 +474,6 @@ const Messages = () => {
                 onSubmit={handleSendMessage}
                 className="flex items-center gap-4"
               >
-                <button
-                  type="button"
-                  className="p-2 text-gray-500 hover:bg-gray-100 rounded-xl transition-colors"
-                >
-                  <Smile className="h-6 w-6" />
-                </button>
                 <div className="flex-1 relative">
                   <input
                     type="text"
