@@ -4,7 +4,6 @@ import {
   getUsers,
   addUser,
   archiveUser,
-  verifyOTP,
   verifyUser,
   rejectUser,
 } from "../services/api";
@@ -44,8 +43,6 @@ const AddUser = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const navigate = useNavigate();
   const [successMessage, setSuccessMessage] = useState(null);
-  const [showOTPVerification, setShowOTPVerification] = useState(false);
-  const [otpData, setOTPData] = useState({ email: "", otp: "" });
   const [errors, setErrors] = useState({
     fullName: "",
     email: "",
@@ -216,48 +213,22 @@ const AddUser = () => {
     try {
       setIsSubmitting(true);
       const response = await addUser(formData);
-
-      // Check user type to determine flow
-      const isAdminOrOwner = ["admin", "owner"].includes(
-        formData.userType.toLowerCase()
-      );
-
-      if (isAdminOrOwner) {
-        // Admin/Owner flow - Use OTP verification
-        setOTPData({ email: formData.email, otp: "" });
-        setShowOTPVerification(true);
-      } else {
-        // Nurse/Nutritionist/Relative flow - Add to pending
+      
+      // Add user to pending list for regular users
+      if (!["admin", "owner"].includes(formData.userType.toLowerCase())) {
         setPendingUsers((prev) => [...prev, response]);
-        setFormData({
-          fullName: "",
-          email: "",
-          password: "",
-          userType: "",
-        });
-        setSuccessMessage("User added and waiting for approval!");
+      } else {
+        // For admin/owner, directly add to active users
+        setUsers((prev) => [...prev, { ...response, isVerified: true }]);
       }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleVerifyOTP = async (e) => {
-    e.preventDefault();
-    try {
-      setIsSubmitting(true);
-      const response = await verifyOTP(otpData);
-      setUsers((prevUsers) => [...prevUsers, response]);
-      setShowOTPVerification(false);
-      setSuccessMessage("User added and verified successfully!");
+      
       setFormData({
         fullName: "",
         email: "",
         password: "",
         userType: "",
       });
+      setSuccessMessage("User added successfully!");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -953,44 +924,6 @@ const AddUser = () => {
                 Archive User
               </button>
             </div>
-          </div>
-        </div>
-      )}
-      {/* OTP Verification Dialog */}
-      {showOTPVerification && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4">
-            <h3 className="text-2xl font-bold mb-6 text-gray-800">
-              Verify Account
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Please enter the verification code sent to {otpData.email}
-            </p>
-
-            <form onSubmit={handleVerifyOTP} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Verification Code
-                </label>
-                <input
-                  type="text"
-                  value={otpData.otp}
-                  onChange={(e) =>
-                    setOTPData({ ...otpData, otp: e.target.value })
-                  }
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-3 px-4 rounded-xl text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? "Verifying..." : "Verify Code"}
-              </button>
-            </form>
           </div>
         </div>
       )}
