@@ -125,7 +125,7 @@ router.post('/', protect, async (req, res) => {
     const alert = await EmergencyAlert.create({
       residentId,
       residentName,
-      message: message || "Emergency alert triggered",
+      message: message || `Emergency alert triggered for ${residentName}`,
       emergencyContact,
       timestamp: new Date()
     });
