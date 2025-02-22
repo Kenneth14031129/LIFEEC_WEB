@@ -360,7 +360,7 @@ const Messages = () => {
           </div>
 
           {/* Chat List */}
-          <div className="overflow-y-auto h-[calc(100vh-13rem)]">
+          <div className="flex-1 overflow-y-auto">
             {filteredChats.map((chat) => (
               <button
                 key={chat.id}
@@ -469,7 +469,7 @@ const Messages = () => {
             </div>
 
             {/* Message Input */}
-            <div className="p-4 border-t border-gray-200 bg-white/90 backdrop-blur-xl">
+            <div className="overflow-y-auto p-4 border-t border-gray-200 bg-white/90 backdrop-blur-xl">
               <form
                 onSubmit={handleSendMessage}
                 className="flex items-center gap-4"
